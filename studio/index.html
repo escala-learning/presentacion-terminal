@@ -1,0 +1,775 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Propuesta B · OVA Studio (KIT-011)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700;9..40,800&display=swap" rel="stylesheet">
+<style>
+  /*
+   * Propuesta B, con la marca de Scala Learning (la misma de la portada de OVA Studio).
+   *   morado   #3F2E75 / #503B96  la herramienta y los botones principales
+   *   noche    #261D4A            la barra
+   *   oro      #F8B716            el avance y lo que sigue ahora
+   *   rotulo   #D7262E            el rojo de los rótulos del Word: solo para «lo que dice el DI»
+   *   mesa     #EEEBF4            el fondo donde se ponen las páginas
+   *   hecho    #2E7D4F · alto #A85F10
+   * Tipo: DM Sans, la de Scala. En el producto va empaquetada; aquí sale de Google Fonts.
+   */
+  :root {
+    --pliego: #3F2E75; --pliego-2: #503B96; --noche: #261D4A; --oro: #F8B716; --rotulo: #D7262E; --mesa: #EEEBF4; --papel: #fff;
+    --tinta: #24203A; --suave: #5E5A72; --linea: #DAD5E6; --hecho: #2E7D4F; --hecho-fondo: #E2F1E8; --alto: #A85F10; --alto-fondo: #FCF1DA;
+    --titulo: "DM Sans", system-ui, sans-serif; --texto: "DM Sans", system-ui, sans-serif;
+    --grad-marca: linear-gradient(100deg, #261D4A 0%, #3F2E75 32%, #503B96 55%, #9E7452 78%, #F8B716 100%);
+    --paleta: 0 1px 0 rgba(38,29,74,.04), 0 12px 32px -8px rgba(38,29,74,.32);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body { font: 15px/1.5 var(--texto); color: var(--tinta); background: var(--mesa); -webkit-font-smoothing: antialiased; }
+  button { font: inherit; cursor: pointer; }
+  :focus-visible { outline: 3px solid #6E8BFF; outline-offset: 2px; }
+  .escena { display: none; min-height: 100vh; } .escena.activa { display: block; }
+
+  /* ---------- Barra de la herramienta ---------- */
+  .barra { height: 56px; display: flex; align-items: center; gap: 18px; padding: 0 22px; background: var(--noche); box-shadow: inset 0 -3px 0 0 transparent; border-bottom: 3px solid; border-image: var(--grad-marca) 1; color: #fff; position: relative; z-index: 30; }
+  .marca { display: flex; align-items: center; gap: 10px; text-decoration: none; color: #fff; }
+  .marca__sello { width: 30px; height: 30px; border-radius: 8px; background: #fff; display: grid; place-items: center; position: relative; }
+  .marca__sello::before { content: ""; width: 14px; height: 18px; border: 2px solid var(--pliego); border-radius: 2px; }
+  .marca__sello::after { content: ""; position: absolute; left: 9px; top: 12px; width: 12px; height: 3px; background: var(--rotulo); }
+  .marca__logo { height: 26px; width: auto; display: block; }
+  .marca__sep { width: 1px; height: 22px; background: rgba(255,255,255,.25); }
+  .marca__nombre { font: 500 16px/1 var(--titulo); color: rgba(255,255,255,.9); }
+  .ruta { display: flex; gap: 8px; align-items: center; color: rgba(255,255,255,.65); font-size: 14px; }
+  .ruta b { color: #fff; font-weight: 700; }
+  .barra__fin { margin-left: auto; display: flex; align-items: center; gap: 14px; font-size: 13px; color: rgba(255,255,255,.7); }
+  .avance { display: flex; gap: 3px; }
+  .avance i { width: 18px; height: 6px; border-radius: 3px; background: rgba(255,255,255,.22); }
+  .avance i.si { background: var(--oro); }
+
+  /* ---------- Escena 1: la mesa de páginas ---------- */
+  .cabeza { padding: 44px 48px 8px; display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: end; max-width: 1480px; margin: 0 auto; }
+  .cabeza__inst { display: flex; align-items: center; gap: 10px; color: var(--suave); font-size: 15px; }
+  .cabeza__inst i { width: 12px; height: 12px; border-radius: 3px; background: var(--oro); }
+  .cabeza h1 { font: 800 clamp(40px, 5.2vw, 72px)/.98 var(--titulo); letter-spacing: -.035em; margin: 10px 0 0; color: var(--pliego); max-width: 14ch; }
+  .fases { display: flex; gap: 6px; align-items: center; font-size: 13px; color: var(--suave); padding-bottom: 10px; }
+  .fase { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 99px; }
+  .fase--hecha::before { content: "✓"; color: var(--hecho); font-weight: 700; }
+  .fase--ahora { background: var(--pliego); color: #fff; font-weight: 700; }
+  .fase--terminal { opacity: .6; }
+
+  .mesa { max-width: 1480px; margin: 0 auto; padding: 28px 48px 60px; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 28px 24px; }
+  .pagina { position: relative; }
+  .pagina__hoja { aspect-ratio: 1440 / 1000; border-radius: 6px; background: var(--papel); overflow: hidden; position: relative; box-shadow: 0 1px 2px rgba(29,43,83,.08), 0 8px 20px -10px rgba(29,43,83,.3); }
+  .pagina__hoja .foto { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+  .pagina__hoja iframe { position: absolute; top: 0; left: 0; width: 1440px; height: 1000px; border: 0; transform-origin: 0 0; pointer-events: none; }
+  .pagina__pie { display: flex; align-items: baseline; gap: 8px; margin-top: 12px; }
+  .pagina__n { font: 700 13px var(--titulo); color: var(--suave); }
+  .pagina__titulo { font: 700 16px/1.25 var(--titulo); color: var(--pliego); }
+  .sellos { display: flex; gap: 6px; margin-top: 6px; font-size: 12.5px; color: var(--suave); flex-wrap: wrap; }
+  .sello { display: inline-flex; align-items: center; gap: 4px; }
+  .sello::before { content: ""; width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid currentColor; }
+  .sello--si { color: var(--hecho); } .sello--si::before { background: currentColor; }
+  .sello--na { opacity: .45; } .sello--na::before { border-style: dashed; }
+  /* hoja pendiente: los rótulos rojos del Word, como vienen */
+  .pendiente { padding: 18px 20px; display: grid; align-content: start; gap: 9px; background: repeating-linear-gradient(0deg, transparent 0 21px, #EEF1F6 21px 22px), var(--papel); }
+  .pendiente span { font-size: 12.5px; color: var(--rotulo); font-weight: 700; }
+  .pendiente em { display: block; height: 6px; border-radius: 3px; background: #DDE2EA; font-style: normal; }
+  .pendiente em.corta { width: 60%; }
+  .pagina--siguiente .pagina__hoja { outline: 3px solid var(--oro); outline-offset: 4px; }
+  .pagina--siguiente .accion { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); white-space: nowrap; }
+  .pagina--detenida .pagina__hoja { outline: 2px dashed var(--alto); outline-offset: 3px; }
+  .aviso-alto { font-size: 12.5px; color: var(--alto); margin-top: 6px; }
+  .pagina__boton { margin-top: 10px; }
+
+  .boton { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 38px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--linea); background: var(--papel); color: var(--pliego); font-weight: 700; font-size: 14px; }
+  .boton:hover { border-color: var(--pliego-2); }
+  .boton--principal { background: var(--pliego); color: #fff; border-color: var(--pliego); box-shadow: 0 6px 16px -6px rgba(29,43,83,.6); }
+  .boton--principal:hover { background: var(--pliego-2); }
+  .boton--grande { height: 46px; padding: 0 22px; font-size: 15px; border-radius: 12px; }
+  .boton--fantasma { background: transparent; border-color: transparent; }
+
+  /* ---------- Escenas 2-4: lienzo a pantalla completa con paletas ---------- */
+  .lienzo { position: fixed; inset: 59px 0 0 0; background: var(--mesa); display: flex; justify-content: center; overflow: hidden; }
+  .lienzo__marco { height: 100%; transition: width .35s cubic-bezier(.2,.8,.2,1); background: #fff; box-shadow: 0 0 0 1px var(--linea); position: relative; }
+  .lienzo__marco iframe { width: 100%; height: 100%; border: 0; display: block; }
+  .lienzo__marco--movil { border-radius: 28px; margin: 22px 0; height: calc(100% - 44px); box-shadow: 0 0 0 10px #1A2033, 0 30px 60px -20px rgba(0,0,0,.5); overflow: hidden; }
+
+  .paleta { position: fixed; z-index: 20; background: rgba(255,255,255,.96); backdrop-filter: blur(16px); border-radius: 16px; box-shadow: var(--paleta); border: 1px solid rgba(29,43,83,.08); }
+  .paleta__cabeza { display: flex; align-items: center; gap: 10px; padding: 14px 16px 10px; cursor: grab; }
+  .paleta__cabeza h2 { font: 700 15px var(--titulo); margin: 0; color: var(--pliego); flex: 1; }
+  .paleta__agarre { width: 18px; height: 10px; background: radial-gradient(circle, #B4BCCB 1.2px, transparent 1.6px) 0 0 / 6px 5px; }
+  .paleta__plegar { border: 0; background: none; color: var(--suave); width: 26px; height: 26px; border-radius: 6px; }
+  .paleta__plegar:hover { background: #EEF1F6; }
+  .paleta__cuerpo { padding: 0 16px 16px; }
+  .paleta.plegada .paleta__cuerpo { display: none; }
+
+  .p-izq { left: 20px; top: 76px; width: 300px; }
+  .p-der { right: 20px; top: 76px; width: 340px; max-height: calc(100vh - 190px); overflow: auto; }
+
+  .chequeo { display: grid; grid-template-columns: 22px 1fr auto; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid #EEF1F6; font-size: 14px; }
+  .chequeo:first-child { border-top: 0; }
+  .chequeo b { font-weight: 700; color: var(--hecho); font-size: 13px; }
+  .ic { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; }
+  .ic--si { background: var(--hecho-fondo); color: var(--hecho); }
+  .ic--ojo { background: var(--alto-fondo); color: var(--alto); }
+  details.capa summary { list-style: none; cursor: pointer; }
+  details.capa summary::-webkit-details-marker { display: none; }
+  details.capa[open] .chequeo span:nth-child(2)::after { content: " (cerrar)"; color: var(--suave); font-size: 12px; }
+  .capa__fila { font-size: 13px; color: var(--suave); padding: 4px 0 6px 32px; }
+  .capa__fila strong { color: var(--tinta); }
+  .titulo-sec { font: 800 22px/1.1 var(--titulo); color: var(--pliego); margin: 0 0 2px; letter-spacing: -.02em; }
+  .sub-sec { font-size: 13px; color: var(--suave); margin: 0 0 12px; }
+
+  .sugerencia { display: grid; grid-template-columns: 28px 1fr; gap: 10px; padding: 12px 0; border-top: 1px solid #EEF1F6; }
+  .sugerencia:first-of-type { border-top: 0; }
+  .sugerencia { cursor: pointer; border-radius: 10px; margin: 0 -8px; padding-left: 8px; padding-right: 8px; }
+  .sugerencia:hover, .sugerencia.activa { background: #F6F3FC; }
+  .sugerencia.activa .pin-n { box-shadow: 0 0 0 4px rgba(248,183,22,.55); }
+  .pin-n { width: 26px; height: 26px; border-radius: 50%; background: var(--pliego); color: #fff; font: 700 13px/26px var(--titulo); text-align: center; }
+  .bloque-ref { display: block; font-size: 12px; color: var(--pliego-2); margin: 0 0 2px; }
+  .sugerencia h3 { font: 700 14px/1.3 var(--texto); margin: 2px 0 2px; }
+  .sugerencia p { margin: 0 0 8px; font-size: 13px; color: var(--suave); }
+  .eleccion { display: inline-flex; background: #EEF1F6; border-radius: 9px; padding: 3px; }
+  .eleccion button { border: 0; background: none; height: 28px; padding: 0 12px; border-radius: 7px; font-size: 13px; font-weight: 700; color: var(--suave); }
+  .eleccion button[aria-pressed="true"].si { background: var(--papel); color: var(--hecho); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+  .eleccion button[aria-pressed="true"].no { background: var(--papel); color: var(--tinta); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+
+  /* pines sobre la pantalla del curso */
+  .pin { position: absolute; z-index: 5; width: 30px; height: 30px; border-radius: 50% 50% 50% 4px; background: var(--pliego); color: #fff; font: 700 14px/30px var(--titulo); text-align: center; box-shadow: 0 0 0 4px rgba(29,43,83,.18), 0 6px 14px -4px rgba(0,0,0,.4); }
+  .pin--descartada { background: #9AA3B5; }
+
+  .muelle { position: fixed; z-index: 25; left: calc(50% + 120px); bottom: 20px; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 14px; border-radius: 16px; background: var(--pliego); color: #fff; box-shadow: 0 18px 40px -12px rgba(29,43,83,.7); white-space: nowrap; }
+  .muelle .boton { border-color: rgba(255,255,255,.18); background: rgba(255,255,255,.08); color: #fff; }
+  .muelle .boton--principal { background: #fff; color: var(--pliego); }
+  .muelle__sep { width: 1px; height: 26px; background: rgba(255,255,255,.2); }
+  .anchos { display: inline-flex; background: rgba(255,255,255,.1); border-radius: 10px; padding: 3px; }
+  .anchos button { border: 0; background: none; color: rgba(255,255,255,.75); height: 32px; padding: 0 12px; border-radius: 8px; font-size: 13px; font-weight: 700; }
+  .anchos button[aria-pressed="true"] { background: #fff; color: var(--pliego); }
+
+  .recompilado { position: fixed; z-index: 26; left: 50%; top: 76px; transform: translateX(-50%); background: var(--hecho); color: #fff; font-size: 13px; font-weight: 700; padding: 8px 16px; border-radius: 99px; box-shadow: 0 10px 24px -10px rgba(30,142,90,.8); }
+
+  /* ---------- Escena 2: plan ---------- */
+  .plan { position: fixed; inset: 59px 0 0 0; overflow: auto; padding: 36px 48px 140px; }
+  .plan__cabeza { max-width: 1180px; margin: 0 auto 22px; display: flex; align-items: end; gap: 20px; }
+  .plan__cabeza h1 { font: 800 40px/1 var(--titulo); letter-spacing: -.03em; color: var(--pliego); margin: 6px 0 0; }
+  .plan__cabeza p { margin: 8px 0 0; color: var(--suave); max-width: 60ch; }
+  .estado-agente { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--suave); background: var(--papel); padding: 8px 12px; border-radius: 99px; box-shadow: var(--paleta); }
+  .estado-agente i { width: 8px; height: 8px; border-radius: 50%; background: #E0A100; box-shadow: 0 0 0 4px rgba(224,161,0,.2); }
+  .cruce { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 1fr 64px 380px; }
+  .cruce__titulos { display: contents; }
+  .cruce__titulos div { font: 700 14px var(--titulo); color: var(--suave); padding: 0 0 10px; }
+  .word { background: var(--papel); padding: 14px 20px 14px 22px; border-left: 1px solid var(--linea); border-right: 1px solid var(--linea); font: 15px/1.55 Calibri, "Carlito", var(--texto); color: #222; }
+  .word--primera { border-top: 1px solid var(--linea); border-radius: 6px 6px 0 0; padding-top: 22px; }
+  .word--ultima { border-bottom: 1px solid var(--linea); border-radius: 0 0 6px 6px; padding-bottom: 22px; }
+  .word .rot { color: var(--rotulo); font-weight: 700; }
+  .word .dg { color: #6B2FA0; font-weight: 700; }
+  .word small { color: #777; }
+  .flecha { position: relative; }
+  .flecha::before { content: ""; position: absolute; left: 0; right: 10px; top: 50%; border-top: 2px dotted #A7B0C2; }
+  .flecha::after { content: ""; position: absolute; right: 4px; top: calc(50% - 5px); border: 5px solid transparent; border-left: 7px solid #A7B0C2; }
+  .comp { align-self: center; display: flex; align-items: center; gap: 12px; background: var(--papel); border-radius: 12px; padding: 10px 14px; margin: 6px 0; box-shadow: 0 1px 2px rgba(29,43,83,.08); border: 1px solid transparent; }
+  .comp svg { width: 40px; height: 30px; flex: none; }
+  .comp b { display: block; font-size: 14px; color: var(--pliego); }
+  .comp span { font-size: 12.5px; color: var(--suave); }
+  .comp--figura { border-color: #C9B6E0; }
+  .comp--ilustra { border: 1px dashed var(--pliego-2); background: #F4F6FC; }
+
+  .aprobar { position: fixed; left: calc(50% + 175px); bottom: 20px; transform: translateX(-50%); z-index: 25; width: min(760px, calc(100% - 400px)); display: flex; gap: 10px; align-items: center; padding: 10px; border-radius: 18px; background: var(--pliego); box-shadow: 0 18px 40px -12px rgba(29,43,83,.7); }
+  .aprobar input { flex: 1; height: 46px; border-radius: 12px; border: 0; padding: 0 16px; font: 15px var(--texto); background: rgba(255,255,255,.1); color: #fff; }
+  .aprobar input::placeholder { color: rgba(255,255,255,.55); }
+  .aprobar .boton { border-color: rgba(255,255,255,.2); background: transparent; color: #fff; }
+  .aprobar .boton--principal { background: #fff; color: var(--pliego); }
+
+  /* ---------- Escena 4: ilustración ---------- */
+  .velo { position: fixed; inset: 59px 0 0 0; background: rgba(26,32,51,.42); z-index: 15; }
+  .ilus { position: fixed; z-index: 20; left: 50%; top: 50%; transform: translate(-50%, -46%); width: min(980px, calc(100% - 40px)); display: grid; grid-template-columns: 1.35fr 1fr; background: var(--papel); border-radius: 20px; overflow: hidden; box-shadow: 0 40px 80px -24px rgba(0,0,0,.55); }
+  .ilus__dibujo { background: #F6F8FB; display: grid; place-items: center; padding: 34px; border-right: 1px solid var(--linea); }
+  .ilus__texto { padding: 26px 26px 22px; display: flex; flex-direction: column; }
+  .ilus__texto h2 { font: 800 26px/1.1 var(--titulo); color: var(--pliego); margin: 0 0 4px; letter-spacing: -.02em; }
+  .ilus__texto .sub-sec { margin-bottom: 14px; }
+  .ilus dl { margin: 0; }
+  .ilus dt { font: 700 13px var(--titulo); color: var(--suave); margin-top: 12px; }
+  .ilus dd { margin: 3px 0 0; font-size: 15px; }
+  .ilus dd q { color: var(--rotulo); quotes: "«" "»"; }
+  .ilus__acciones { margin-top: auto; padding-top: 20px; display: grid; gap: 8px; }
+  .ilus__acciones div { display: flex; gap: 8px; }
+  .ilus__acciones .boton { flex: 1; }
+  .ilus__acciones input { height: 42px; border-radius: 10px; border: 1px solid var(--linea); padding: 0 12px; font: 14px var(--texto); }
+
+
+  /* ---------- Escenas 0: crear, insumos, auditar insumos ---------- */
+  .pagina-ancha { max-width: 1480px; margin: 0 auto; padding: 0 48px 80px; }
+  .fases--solas { padding: 18px 0 0; }
+  .crear { display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; align-items: start; padding-top: 28px; }
+  .bloque { background: var(--papel); border-radius: 18px; padding: 26px 28px; box-shadow: 0 1px 2px rgba(38,29,74,.06), 0 10px 26px -14px rgba(38,29,74,.3); }
+  .bloque h2 { font: 700 20px/1.2 var(--titulo); margin: 0 0 4px; color: var(--pliego); }
+  .bloque > p { margin: 0 0 18px; color: var(--suave); }
+  .campo { display: grid; gap: 6px; margin-bottom: 18px; }
+  .campo label { font-weight: 700; font-size: 14px; }
+  .campo input { height: 46px; border-radius: 12px; border: 1px solid var(--linea); padding: 0 14px; font: 16px var(--texto); }
+  .campo small { color: var(--suave); font-size: 13px; }
+  .instituciones { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .inst { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; border: 2px solid var(--linea); background: var(--papel); text-align: left; }
+  .inst i { width: 34px; height: 34px; border-radius: 9px; flex: none; }
+  .inst b { display: block; font-size: 14px; } .inst span { font-size: 12.5px; color: var(--suave); }
+  .inst[aria-pressed="true"] { border-color: var(--pliego-2); background: #F6F3FC; }
+  .maqueta-vacia { position: sticky; top: 90px; }
+  .maqueta-vacia .pagina__hoja { aspect-ratio: 1440/1000; }
+  .maqueta-vacia p { color: var(--suave); font-size: 14px; margin: 12px 0 0; }
+
+  .insumos { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; padding-top: 28px; }
+  .insumo-c { background: var(--papel); border-radius: 18px; padding: 20px; box-shadow: 0 1px 2px rgba(38,29,74,.06), 0 10px 26px -14px rgba(38,29,74,.3); display: grid; gap: 12px; align-content: start; }
+  .insumo-c__cabeza { display: flex; align-items: center; gap: 12px; }
+  .insumo-c__icono { width: 44px; height: 52px; border-radius: 6px; display: grid; place-items: center; font: 800 12px var(--titulo); color: #fff; flex: none; position: relative; }
+  .insumo-c__icono::after { content: ""; position: absolute; top: 0; right: 0; border: 7px solid; border-color: var(--mesa) var(--mesa) rgba(255,255,255,.35) rgba(255,255,255,.35); }
+  .insumo-c h3 { margin: 0; font: 700 17px/1.2 var(--titulo); color: var(--pliego); }
+  .insumo-c__estado { font-size: 13px; }
+  .listo { color: var(--hecho); font-weight: 700; }
+  .archivo { font-size: 13.5px; background: #F7F5FB; border-radius: 10px; padding: 10px 12px; color: var(--tinta); }
+  .archivo span { display: block; color: var(--suave); font-size: 12.5px; margin-top: 2px; }
+  .soltar { border: 2px dashed #B9AEDA; border-radius: 14px; padding: 22px; text-align: center; color: var(--suave); background: #FBFAFE; }
+  .soltar b { display: block; color: var(--pliego); font-size: 15px; margin-bottom: 4px; }
+  .soltar--activo { border-color: var(--oro); background: #FFF9E8; }
+  .insumo-c__pie { display: flex; gap: 8px; justify-content: flex-end; }
+
+  .veredicto { display: grid; grid-template-columns: 1fr 1.1fr; gap: 28px; padding-top: 28px; align-items: start; }
+  .sello-grande { display: flex; gap: 18px; align-items: center; padding: 24px 26px; border-radius: 18px; background: var(--grad-marca); color: #fff; }
+  .sello-grande__marca { width: 64px; height: 64px; border-radius: 50%; border: 3px solid #fff; display: grid; place-items: center; font: 800 28px var(--titulo); flex: none; }
+  .sello-grande h2 { margin: 0; font: 800 28px/1.1 var(--titulo); letter-spacing: -.02em; }
+  .sello-grande p { margin: 4px 0 0; color: rgba(255,255,255,.85); }
+  .armado { margin-top: 20px; }
+  .armado h3, .errores h3 { font: 700 17px var(--titulo); color: var(--pliego); margin: 0 0 10px; }
+  .menu-armado { display: grid; gap: 6px; }
+  .menu-armado div { display: flex; gap: 10px; align-items: center; background: var(--papel); border-radius: 10px; padding: 10px 12px; font-size: 14.5px; }
+  .menu-armado div span { color: var(--suave); font-size: 13px; width: 22px; }
+  .error-o { background: var(--papel); border-radius: 14px; padding: 16px 18px; margin-bottom: 10px; border-left: 4px solid var(--alto); }
+  .error-o__fila { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+  .error-o b { font-size: 15px; }
+  .etiqueta { font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 6px; background: var(--alto-fondo); color: var(--alto); }
+  .etiqueta--suave { background: #F1EEF7; color: var(--suave); }
+  .error-o p { margin: 6px 0 10px; color: var(--suave); font-size: 14px; }
+  @media (max-width: 900px) { .crear, .veredicto { grid-template-columns: 1fr; } .pagina-ancha { padding: 0 20px 60px; } }
+
+
+  /* ---------- Ingreso y lista de cursos ---------- */
+  body.sin-barra .barra { display: none; }
+  .ingreso { min-height: 100vh; display: grid; grid-template-columns: 1.25fr 1fr; }
+  .ingreso__marca { position: relative; overflow: hidden; background: var(--grad-marca); color: #fff; padding: 56px 60px; display: flex; flex-direction: column; }
+  .ingreso__marca::before { content: ""; position: absolute; inset: -20%; background: radial-gradient(40% 36% at 25% 25%, rgba(255,255,255,.14), transparent 70%), radial-gradient(34% 30% at 85% 80%, rgba(248,183,22,.32), transparent 70%); }
+  .ingreso__logo { height: 46px; width: auto; position: relative; align-self: flex-start; }
+  .ingreso__titulo { position: relative; font: 800 clamp(48px, 6vw, 84px)/.95 var(--titulo); letter-spacing: -.04em; margin: 48px 0 12px; }
+  .ingreso__lema { position: relative; font-size: 20px; margin: 0; color: rgba(255,255,255,.9); max-width: 30ch; }
+  .abanico { position: relative; flex: 1; min-height: 300px; margin-top: 30px; }
+  .abanico .pagina__hoja { position: absolute; width: 46%; border-radius: 10px; box-shadow: 0 30px 60px -20px rgba(10,5,30,.65); }
+  .abanico .h1 { left: 0; top: 40px; transform: rotate(-7deg); }
+  .abanico .h2 { left: 27%; top: 0; transform: rotate(1deg); z-index: 2; }
+  .abanico .h3 { left: 53%; top: 54px; transform: rotate(8deg); }
+  .ingreso__pie { position: relative; font-size: 14px; color: rgba(255,255,255,.75); }
+  .ingreso__lado { display: grid; place-items: center; padding: 40px; background: var(--papel); }
+  .ingreso__caja { width: min(380px, 100%); }
+  .ingreso__caja h2 { font: 800 34px/1.05 var(--titulo); letter-spacing: -.02em; color: var(--pliego); margin: 0 0 6px; }
+  .ingreso__caja > p { color: var(--suave); margin: 0 0 26px; }
+  .ingreso__caja .boton { width: 100%; }
+
+  .filtros { display: flex; gap: 8px; padding-top: 18px; flex-wrap: wrap; }
+  .filtro { height: 36px; padding: 0 14px; border-radius: 99px; border: 1px solid var(--linea); background: var(--papel); font-weight: 700; font-size: 14px; color: var(--suave); display: inline-flex; align-items: center; gap: 8px; }
+  .filtro i { width: 10px; height: 10px; border-radius: 3px; }
+  .filtro[aria-pressed="true"] { background: var(--pliego); color: #fff; border-color: var(--pliego); }
+  .cursos { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 30px 24px; padding-top: 24px; }
+  .curso-c { text-align: left; background: none; border: 0; padding: 0; color: inherit; }
+  .curso-c .pagina__hoja { transition: transform .2s; }
+  .curso-c:hover .pagina__hoja { transform: translateY(-3px); }
+  .curso-c__inst { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--suave); margin-top: 12px; }
+  .curso-c__inst i { width: 10px; height: 10px; border-radius: 3px; }
+  .curso-c h3 { font: 700 18px/1.25 var(--titulo); color: var(--pliego); margin: 4px 0 8px; }
+  .barrita { height: 6px; border-radius: 3px; background: #DCD6EA; overflow: hidden; }
+  .barrita i { display: block; height: 100%; background: var(--oro); border-radius: 3px; }
+  .curso-c__fase { display: flex; justify-content: space-between; font-size: 13px; color: var(--suave); margin-top: 7px; }
+  .curso-c__fase b { color: var(--tinta); }
+  .curso-c--nuevo .pagina__hoja { display: grid; place-items: center; background: transparent; border: 2px dashed #B9AEDA; box-shadow: none; color: var(--pliego); font: 700 17px var(--titulo); }
+  @media (max-width: 900px) { .ingreso { grid-template-columns: 1fr; } .abanico { display: none; } }
+
+  /* ---------- Guía del recorrido (solo mockup) ---------- */
+  .guia { position: fixed; z-index: 60; left: 16px; bottom: 16px; width: 330px; padding: 14px 16px; border-radius: 14px; background: #FFFBEA; border: 2px dashed #C9A227; box-shadow: 0 12px 30px -10px rgba(0,0,0,.35); font-size: 14px; }
+  .guia__cabeza { display: flex; justify-content: space-between; font-size: 12px; color: #8A6D00; }
+  .guia__titulo { font-weight: 700; font-size: 16px; margin: 6px 0 4px; color: var(--tinta); }
+  .guia__texto { margin: 0 0 12px; color: var(--suave); line-height: 1.45; }
+  .guia__botones { display: flex; gap: 8px; justify-content: flex-end; }
+  .guia .boton { height: 32px; font-size: 13px; }
+  .guia__plegar { border: 0; background: none; color: #8A6D00; font-size: 12px; text-decoration: underline; padding: 0; }
+  .guia.plegada .guia__botones, .guia.plegada .guia__texto, .guia.plegada .guia__titulo { display: none; }
+  /* (selector viejo) */
+  .escenas { position: fixed; z-index: 60; left: 50%; top: 11px; transform: translateX(-50%); display: flex; gap: 4px; align-items: center; padding: 5px; border-radius: 12px; background: #fff; border: 2px dashed #9AA3B5; font-size: 12px; }
+  .escenas span { padding: 0 8px; color: var(--suave); }
+  .escenas button { border: 0; background: none; height: 28px; padding: 0 10px; border-radius: 8px; font-size: 12px; font-weight: 700; color: var(--suave); }
+  .escenas button[aria-pressed="true"] { background: var(--pliego); color: #fff; }
+
+  @media (max-width: 900px) {
+    .cabeza { grid-template-columns: 1fr; padding: 28px 20px 0; } .fases { flex-wrap: wrap; }
+    .mesa { padding: 20px; }
+    .p-izq, .p-der { position: static; width: auto; margin: 12px; max-height: none; }
+    .cruce { grid-template-columns: 1fr; } .flecha { height: 18px; } .flecha::before { left: 50%; right: auto; top: 0; bottom: 0; border-top: 0; border-left: 2px dotted #A7B0C2; } .flecha::after { display: none; }
+    .ilus { grid-template-columns: 1fr; top: 56px; transform: translateX(-50%); }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<header class="barra">
+  <a class="marca" href="#"><img class="marca__logo" src="marca-scala.svg" alt="Scala Learning"><span class="marca__sep" aria-hidden="true"></span><span class="marca__nombre">OVA Studio</span></a>
+  <nav class="ruta" aria-label="Dónde estás"><span>Cursos</span><span aria-hidden="true" id="ruta-sep0">/</span><span id="ruta-inst">Andina</span><span aria-hidden="true" id="ruta-sep">/</span><b id="ruta-curso">Del dato a la decisión</b></nav>
+  <div class="barra__fin" id="barra-fin"><span>3 de 7 secciones</span><span class="avance" aria-hidden="true"><i class="si"></i><i class="si"></i><i class="si"></i><i></i><i></i><i></i><i></i></span></div>
+</header>
+
+
+
+<!-- ================= A · Ingreso ================= -->
+<section class="escena" id="ingreso">
+  <div class="ingreso">
+    <div class="ingreso__marca">
+      <img class="ingreso__logo" src="marca-scala.svg" alt="Scala Learning">
+      <h1 class="ingreso__titulo">OVA Studio</h1>
+      <p class="ingreso__lema">Del Word del diseño instruccional al curso listo para el aula.</p>
+      <div class="abanico" aria-hidden="true">
+        <div class="pagina__hoja h1"><img class="foto" src="portadas/andina-unidad-demo.jpg" alt="" loading="lazy"></div>
+        <div class="pagina__hoja h2"><img class="foto" src="portadas/scala-piloto.jpg" alt="" loading="lazy"></div>
+        <div class="pagina__hoja h3"><img class="foto" src="portadas/up-unidad-demo.jpg" alt="" loading="lazy"></div>
+      </div>
+      <p class="ingreso__pie">Un solo taller para Scala, Andina y Posgrados Panamericana, cada uno con su piel.</p>
+    </div>
+    <div class="ingreso__lado">
+      <form class="ingreso__caja" onsubmit="return false">
+        <h2>Hola de nuevo</h2>
+        <p>Entra para seguir con tus cursos.</p>
+        <div class="campo"><label for="i-correo">Correo</label><input id="i-correo" type="email" value="francisco@scala.com.co" autocomplete="username"></div>
+        <div class="campo"><label for="i-clave">Clave</label><input id="i-clave" type="password" value="••••••••" autocomplete="current-password"></div>
+        <button class="boton boton--principal boton--grande" data-escena="cursos">Ingresar</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ================= B · Tus cursos ================= -->
+<section class="escena" id="cursos">
+  <div class="cabeza"><div><div class="cabeza__inst"><i></i>Hola, Francisco</div><h1>Tus cursos</h1></div>
+    <button class="boton boton--principal boton--grande" data-escena="crear" style="margin-bottom:10px">Empezar un curso</button></div>
+  <div class="pagina-ancha">
+    <div class="filtros">
+      <button class="filtro" aria-pressed="true">Todos</button>
+      <button class="filtro" aria-pressed="false"><i style="background:#503B96"></i>Scala Learning</button>
+      <button class="filtro" aria-pressed="false"><i style="background:#2C7BC4"></i>Universidad Andina Virtual</button>
+      <button class="filtro" aria-pressed="false"><i style="background:#0D4D3A"></i>Posgrados Panamericana</button>
+    </div>
+    <div class="cursos">
+      <button class="curso-c" data-escena="mesa"><div class="pagina__hoja"><img class="foto" src="portadas/andina-ensayo.jpg" alt="" loading="lazy"></div>
+        <div class="curso-c__inst"><i style="background:#2C7BC4"></i>Universidad Andina Virtual</div><h3>Del dato a la decisión</h3>
+        <div class="barrita"><i style="width:55%"></i></div><div class="curso-c__fase"><b>Maquetar e ilustrar</b><span>3 de 7 secciones</span></div></button>
+      <button class="curso-c"><div class="pagina__hoja"><img class="foto" src="portadas/scala-piloto.jpg" alt="" loading="lazy"></div>
+        <div class="curso-c__inst"><i style="background:#503B96"></i>Scala Learning</div><h3>Del dato a la decisión</h3>
+        <div class="barrita"><i style="width:100%"></i></div><div class="curso-c__fase"><b>Listo para entregar</b><span>auditado</span></div></button>
+      <button class="curso-c"><div class="pagina__hoja"><img class="foto" src="portadas/up-unidad-demo.jpg" alt="" loading="lazy"></div>
+        <div class="curso-c__inst"><i style="background:#0D4D3A"></i>Posgrados Panamericana</div><h3>Gobierno, calidad y protección de datos</h3>
+        <div class="barrita"><i style="width:85%"></i></div><div class="curso-c__fase"><b>Ajustes del cliente</b><span>ronda del 26-oct</span></div></button>
+      <button class="curso-c"><div class="pagina__hoja"><img class="foto" src="portadas/andina-unidad-demo.jpg" alt="" loading="lazy"></div>
+        <div class="curso-c__inst"><i style="background:#2C7BC4"></i>Universidad Andina Virtual</div><h3>Gobierno, calidad y protección de datos</h3>
+        <div class="barrita"><i style="width:100%"></i></div><div class="curso-c__fase"><b>Entregado</b><span>publicado</span></div></button>
+      <button class="curso-c"><div class="pagina__hoja"><img class="foto" src="portadas/scala-unidad-3.jpg" alt="" loading="lazy"></div>
+        <div class="curso-c__inst"><i style="background:#503B96"></i>Scala Learning</div><h3>Gobierno, calidad y protección de datos</h3>
+        <div class="barrita"><i style="width:30%"></i></div><div class="curso-c__fase"><b>Auditar insumos</b><span>2 errores de origen</span></div></button>
+      <button class="curso-c curso-c--nuevo" data-escena="crear"><div class="pagina__hoja">Empezar un curso</div></button>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 0a · Crear un curso ================= -->
+<section class="escena" id="crear">
+  <div class="cabeza"><div><div class="cabeza__inst"><i></i>Curso nuevo</div><h1>Empieza un curso</h1></div></div>
+  <div class="pagina-ancha">
+    <nav class="fases fases--solas" aria-label="Fases del curso"><span class="fase fase--ahora">Crear</span><span class="fase ">Insumos</span><span class="fase ">Auditar insumos</span><span class="fase ">Maquetar e ilustrar</span><span class="fase fase--terminal">Auditar y entregar, en la terminal</span></nav>
+    <div class="crear">
+      <form class="bloque" onsubmit="return false">
+        <h2>¿Para qué institución?</h2>
+        <p>El curso sale con su piel, su estructura y su maqueta vacía.</p>
+        <div class="instituciones">
+          <button type="button" class="inst" aria-pressed="false"><i style="background:linear-gradient(135deg,#3F2E75,#F8B716)"></i><span><b>Scala Learning</b><span>RED de Scala</span></span></button>
+          <button type="button" class="inst" aria-pressed="true"><i style="background:linear-gradient(135deg,#0F2A4F,#2C7BC4)"></i><span><b>Universidad Andina Virtual</b><span>RED de Scala, piel Andina</span></span></button>
+          <button type="button" class="inst" aria-pressed="false"><i style="background:linear-gradient(135deg,#0D4D3A,#C9A227)"></i><span><b>Posgrados Panamericana</b><span>RED de Scala, piel UP</span></span></button>
+        </div>
+        <div class="campo" style="margin-top:22px"><label for="c-nombre">Nombre del curso</label><input id="c-nombre" value="Del dato a la decisión"><small>Tal como lo dice el Word. Lo puedes ajustar al auditar los insumos.</small></div>
+        <div class="campo"><label for="c-slug">Nombre de la carpeta</label><input id="c-slug" value="del-dato-a-la-decision"><small>Se arma solo desde el nombre.</small></div>
+        <button class="boton boton--principal boton--grande" data-escena="insumos">Crear curso</button>
+      </form>
+      <div class="maqueta-vacia">
+        <div class="pagina__hoja pendiente"><span>Inicio</span><em></em><em class="corta"></em><span>Contenido de la unidad</span><em></em><span>Introducción</span><em class="corta"></em><span>Temas</span><em></em><em class="corta"></em><span>Evaluación</span><em></em></div>
+        <p>Así empieza: la maqueta vacía de Andina, con las secciones que se llenan desde el Word.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 0b · Insumos ================= -->
+<section class="escena" id="insumos">
+  <div class="cabeza"><div><div class="cabeza__inst"><i></i>Universidad Andina Virtual · del-dato-a-la-decision</div><h1>Del dato a la decisión</h1></div></div>
+  <div class="pagina-ancha">
+    <nav class="fases fases--solas" aria-label="Fases del curso"><span class="fase fase--hecha">Crear</span><span class="fase fase--ahora">Insumos</span><span class="fase ">Auditar insumos</span><span class="fase ">Maquetar e ilustrar</span><span class="fase fase--terminal">Auditar y entregar, en la terminal</span></nav>
+    <div class="insumos">
+      <article class="insumo-c">
+        <div class="insumo-c__cabeza"><span class="insumo-c__icono" style="background:#2B579A">W</span><div><h3>Diseño instruccional</h3><div class="insumo-c__estado listo">Recibido</div></div></div>
+        <div class="archivo">DI_Unidad4_Del_dato_a_la_decision.docx<span>«Del dato a la decisión», 2 temas</span></div>
+        <div class="insumo-c__pie"><button class="boton">Cambiar archivo</button></div>
+      </article>
+      <article class="insumo-c">
+        <div class="insumo-c__cabeza"><span class="insumo-c__icono" style="background:#6B2FA0">IMG</span><div><h3>Figuras del diseñador</h3><div class="insumo-c__estado listo">Recibidas</div></div></div>
+        <div class="archivo">figura-02-ciclo-decision.svg<span>Cubre la Imagen-02 de la introducción</span></div>
+        <div class="insumo-c__pie"><button class="boton">Agregar más</button></div>
+      </article>
+      <article class="insumo-c">
+        <div class="insumo-c__cabeza"><span class="insumo-c__icono" style="background:#C2362F">▶</span><div><h3>Video y pódcast</h3><div class="insumo-c__estado">Falta</div></div></div>
+        <div class="soltar soltar--activo"><b>Suelta aquí los archivos</b>o haz clic para buscarlos</div>
+        <div class="insumo-c__pie"><button class="boton">No aplica</button></div>
+      </article>
+      <article class="insumo-c">
+        <div class="insumo-c__cabeza"><span class="insumo-c__icono" style="background:#2E7D4F">?</span><div><h3>Preguntas de la evaluación</h3><div class="insumo-c__estado">Falta</div></div></div>
+        <div class="soltar"><b>Arrastra el Word de preguntas</b>o haz clic para buscarlo</div>
+        <div class="insumo-c__pie"><button class="boton">No aplica</button></div>
+      </article>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:24px"><button class="boton boton--principal boton--grande" data-escena="auditar">Auditar los insumos</button></div>
+  </div>
+</section>
+
+<!-- ================= 0c · Auditar insumos ================= -->
+<section class="escena" id="auditar">
+  <div class="cabeza"><div><div class="cabeza__inst"><i></i>Universidad Andina Virtual · del-dato-a-la-decision</div><h1>Del dato a la decisión</h1></div></div>
+  <div class="pagina-ancha">
+    <nav class="fases fases--solas" aria-label="Fases del curso"><span class="fase fase--hecha">Crear</span><span class="fase fase--hecha">Insumos</span><span class="fase fase--ahora">Auditar insumos</span><span class="fase ">Maquetar e ilustrar</span><span class="fase fase--terminal">Auditar y entregar, en la terminal</span></nav>
+    <div class="veredicto">
+      <div>
+        <div class="sello-grande"><span class="sello-grande__marca">✓</span><div><h2>Puedes maquetar</h2><p>El Word está completo. Un error de origen detiene solo la figura 3; lo demás sigue.</p></div></div>
+        <div class="armado">
+          <h3>Lo que se armó desde el Word</h3>
+          <div class="menu-armado">
+            <div><span>1</span>Inicio</div><div><span>2</span>Contenido de la unidad</div><div><span>3</span>Introducción</div>
+            <div><span>4</span>Del dato a la pregunta</div><div><span>5</span>Explorar alternativas con apoyo de IA</div><div><span>6</span>Evaluación de la unidad</div><div><span>7</span>Referencias</div>
+          </div>
+        </div>
+      </div>
+      <div class="errores">
+        <h3>Errores de origen</h3>
+        <article class="error-o">
+          <div class="error-o__fila"><b>F1 · La figura 3 dice «decisón»</b><span class="etiqueta">Detiene la figura 3</span><span class="etiqueta etiqueta--suave">Lo corrige: diseño gráfico</span></div>
+          <p>El texto dentro de la imagen tiene una errata. La sección 5 se maqueta con un hueco donde va la figura hasta que llegue corregida.</p>
+          <button class="boton">Cargar la figura corregida</button>
+        </article>
+        <article class="error-o" style="border-left-color:#B9AEDA">
+          <div class="error-o__fila"><b>D1 · ¿El subtítulo es «Asignatura»?</b><span class="etiqueta etiqueta--suave">Duda, no detiene</span><span class="etiqueta etiqueta--suave">Lo responde: el instruccional</span></div>
+          <p>El Word no trae subtítulo; se tomó el de la portada de la plantilla.</p>
+        </article>
+        <div style="display:flex;justify-content:flex-end;margin-top:18px"><button class="boton boton--principal boton--grande" data-escena="mesa">Ir a maquetar</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 1 · La mesa: el curso como páginas ================= -->
+<section class="escena" id="mesa">
+  <div class="cabeza">
+    <div>
+      <div class="cabeza__inst"><i></i>Universidad Andina Virtual · ensayo-ova</div>
+      <h1>Del dato a la decisión</h1>
+    </div>
+    <nav class="fases" aria-label="Fases del curso">
+      <span class="fase fase--hecha">Crear</span><span class="fase fase--hecha">Insumos</span><span class="fase fase--hecha">Auditar insumos</span>
+      <span class="fase fase--ahora">Maquetar e ilustrar</span><span class="fase fase--terminal">Auditar y entregar, en la terminal</span>
+    </nav>
+  </div>
+
+  <div class="mesa">
+    <article class="pagina">
+      <div class="pagina__hoja"><img class="foto" src="portadas/andina-ensayo.jpg" alt="" loading="lazy"></div>
+      <div class="pagina__pie"><span class="pagina__n">1</span><span class="pagina__titulo">Inicio</span></div>
+      <div class="sellos"><span class="sello sello--si">Maquetada</span><span class="sello sello--na">Sin ilustración</span><span class="sello sello--si">Diagramada</span></div>
+    </article>
+    <article class="pagina">
+      <div class="pagina__hoja"><img class="foto" src="portadas/andina-ensayo-temario.jpg" alt="" loading="lazy"></div>
+      <div class="pagina__pie"><span class="pagina__n">2</span><span class="pagina__titulo">Contenido de la unidad</span></div>
+      <div class="sellos"><span class="sello sello--si">Maquetada</span><span class="sello sello--na">Sin ilustración</span><span class="sello sello--si">Diagramada</span></div>
+    </article>
+    <article class="pagina">
+      <div class="pagina__hoja"><img class="foto" src="portadas/andina-ensayo-introduccion.jpg" alt="" loading="lazy"></div>
+      <div class="pagina__pie"><span class="pagina__n">3</span><span class="pagina__titulo">Introducción</span></div>
+      <div class="sellos"><span class="sello sello--si">Maquetada</span><span class="sello">Ilustración pendiente</span><span class="sello sello--si">Diagramada</span></div>
+      <button class="boton pagina__boton" data-escena="ilustracion">Ilustrar</button>
+    </article>
+    <article class="pagina pagina--siguiente">
+      <div class="pagina__hoja pendiente" aria-label="Rótulos del Word de esta sección">
+        <span>Acordeón</span><em></em><em class="corta"></em>
+        <span>Comparativo</span><em></em>
+        <span>Proceso escalonado</span><em></em><em class="corta"></em>
+        <span>Video</span>
+        <button class="boton boton--principal boton--grande accion" data-escena="plan">Maquetar esta sección</button>
+      </div>
+      <div class="pagina__pie"><span class="pagina__n">4</span><span class="pagina__titulo">Del dato a la pregunta</span></div>
+      <div class="sellos"><span class="sello">Sigue ahora</span></div>
+    </article>
+    <article class="pagina pagina--detenida">
+      <div class="pagina__hoja pendiente">
+        <span>Línea de tiempo</span><em></em><em class="corta"></em>
+        <span>Imagen-03 (falta)</span><em></em>
+        <span>Tarjetas</span><em class="corta"></em>
+      </div>
+      <div class="pagina__pie"><span class="pagina__n">5</span><span class="pagina__titulo">Explorar alternativas con apoyo de IA</span></div>
+      <div class="aviso-alto">La figura 3 tiene un error de origen (F1): se maqueta y esa figura queda como hueco.</div>
+      <button class="boton pagina__boton">Maquetar</button>
+    </article>
+    <article class="pagina">
+      <div class="pagina__hoja pendiente"><span>Evaluación</span><em></em><em></em><em class="corta"></em><em></em><em class="corta"></em></div>
+      <div class="pagina__pie"><span class="pagina__n">6</span><span class="pagina__titulo">Evaluación de la unidad</span></div>
+      <button class="boton pagina__boton">Maquetar</button>
+    </article>
+    <article class="pagina">
+      <div class="pagina__hoja pendiente"><span>Referencias</span><em></em><em class="corta"></em><em></em></div>
+      <div class="pagina__pie"><span class="pagina__n">7</span><span class="pagina__titulo">Referencias</span></div>
+      <button class="boton pagina__boton">Maquetar</button>
+    </article>
+  </div>
+</section>
+
+<!-- ================= 2 · Plan: del Word al curso ================= -->
+<section class="escena" id="plan">
+  <div class="plan">
+    <div class="plan__cabeza">
+      <div>
+        <div class="cabeza__inst"><i></i>Sección 4 de 7</div>
+        <h1>Del dato a la pregunta</h1>
+        <p>El diagramador leyó el Word y propone una pieza para cada bloque. Nada se escribe en el curso hasta que lo apruebes.</p>
+      </div>
+      <div class="estado-agente"><i></i>Esperando tu aprobación</div>
+    </div>
+
+    <div class="cruce">
+      <div class="cruce__titulos"><div>Así viene en el Word</div><div></div><div>Así queda en el curso</div></div>
+
+      <div class="word word--primera">Tomar una decisión con datos empieza antes de abrir la hoja de cálculo: empieza con <b>la pregunta correcta</b>…</div>
+      <div class="flecha"></div>
+      <div class="comp"><svg viewBox="0 0 40 30"><rect x="2" y="6" width="36" height="3" rx="1.5" fill="#3F2E75"/><rect x="2" y="13" width="30" height="3" rx="1.5" fill="#A7B0C2"/><rect x="2" y="20" width="34" height="3" rx="1.5" fill="#A7B0C2"/></svg><div><b>Párrafo</b><span>con sus 2 negrillas del Word</span></div></div>
+
+      <div class="word"><small>(Sin bloque en el Word: la pone el ilustrador después.)</small></div>
+      <div class="flecha"></div>
+      <div class="comp comp--ilustra"><svg viewBox="0 0 40 30"><path d="M4 6h32L24 18v6h-8v-6z" fill="none" stroke="#3F2E75" stroke-width="2"/></svg><div><b>Ilustración de apertura</b><span>se dibuja al ilustrar la sección</span></div></div>
+
+      <div class="word"><span class="rot">Acordeón</span> 1.1 El criterio de decisión <small>· 4 ítems</small></div>
+      <div class="flecha"></div>
+      <div class="comp"><svg viewBox="0 0 40 30"><rect x="2" y="3" width="36" height="7" rx="2" fill="#3F2E75"/><rect x="2" y="12" width="36" height="7" rx="2" fill="none" stroke="#A7B0C2" stroke-width="1.5"/><rect x="2" y="21" width="36" height="7" rx="2" fill="none" stroke="#A7B0C2" stroke-width="1.5"/></svg><div><b>Acordeón</b><span>4 paneles, el primero abierto</span></div></div>
+
+      <div class="word"><span class="rot">Comparativo - error y acierto</span></div>
+      <div class="flecha"></div>
+      <div class="comp"><svg viewBox="0 0 40 30"><rect x="2" y="4" width="17" height="22" rx="2" fill="#F6D9DA"/><rect x="21" y="4" width="17" height="22" rx="2" fill="#D6EFE1"/></svg><div><b>Comparativo</b><span>error a la izquierda, acierto a la derecha</span></div></div>
+
+      <div class="word"><span class="dg">DISEÑO GRÁFICO</span> Imagen-03</div>
+      <div class="flecha"></div>
+      <div class="comp comp--figura"><svg viewBox="0 0 40 30"><rect x="2" y="3" width="36" height="24" rx="2" fill="#EEE7F6"/><path d="M6 23l9-9 6 6 5-4 8 7z" fill="#6B2FA0" opacity=".6"/></svg><div><b>Figura del diseñador</b><span>figura-03.webp, no se redibuja</span></div></div>
+
+      <div class="word"><span class="rot">Pasos</span> 1.2 El error típico y el camino correcto <small>· 3 pasos</small></div>
+      <div class="flecha"></div>
+      <div class="comp"><svg viewBox="0 0 40 30"><rect x="2" y="20" width="11" height="7" rx="1.5" fill="#A7B0C2"/><rect x="14" y="13" width="11" height="14" rx="1.5" fill="#6C7DB0"/><rect x="26" y="5" width="12" height="22" rx="1.5" fill="#3F2E75"/></svg><div><b>Proceso escalonado</b><span>número, título y descripción del Word</span></div></div>
+
+      <div class="word word--ultima"><span class="rot">Video</span> «Smarter decisions» <small>· Wikimedia Commons · 2:15</small></div>
+      <div class="flecha"></div>
+      <div class="comp"><svg viewBox="0 0 40 30"><rect x="2" y="3" width="36" height="24" rx="3" fill="#3F2E75"/><path d="M17 10l8 5-8 5z" fill="#fff"/></svg><div><b>Video</b><span>con su transcripción</span></div></div>
+    </div>
+  </div>
+
+  <form class="aprobar" onsubmit="return false">
+    <input aria-label="Pide un cambio al plan" placeholder="¿Algo distinto? Por ejemplo: los pasos como línea de tiempo">
+    <button type="button" class="boton">Pedir cambio</button>
+    <button type="button" class="boton boton--principal boton--grande" data-escena="revision">Aprobar y maquetar</button>
+  </form>
+</section>
+
+<!-- ================= 3 · Revisión: el curso a pantalla completa ================= -->
+<section class="escena" id="revision">
+  <div class="lienzo">
+    <div class="lienzo__marco" id="marco" style="width:100%">
+      <iframe id="previa" data-src="tema1.html" title="Pantalla de Del dato a la pregunta"></iframe>
+    </div>
+  </div>
+  <div class="recompilado" role="status">Recompilado hace 3 s. Aplicadas las sugerencias 1 y 3.</div>
+
+  <aside class="paleta p-izq" aria-label="Verificaciones">
+    <div class="paleta__cabeza"><span class="paleta__agarre" aria-hidden="true"></span><h2>Verificaciones</h2><button class="paleta__plegar" aria-label="Plegar">–</button></div>
+    <div class="paleta__cuerpo">
+      <p class="titulo-sec">Del dato a la pregunta</p>
+      <p class="sub-sec">Solo esta sección. Maquetada hace un momento.</p>
+      <div class="chequeo"><span class="ic ic--si">✓</span><span>Texto del Word</span><b>46 de 46</b></div>
+      <div class="chequeo"><span class="ic ic--si">✓</span><span>Negrillas</span><b>12 de 12</b></div>
+      <div class="chequeo"><span class="ic ic--si">✓</span><span>Componentes reconocidos</span><b>todos</b></div>
+      <details class="capa"><summary class="chequeo"><span class="ic ic--ojo">!</span><span>Textos que no vienen del Word</span><b style="color:var(--alto)">2</b></summary>
+        <div class="capa__fila"><strong>Pie de la figura 3:</strong> «Del dato a la pregunta: el criterio filtra»</div>
+        <div class="capa__fila"><strong>Llamado antes del acordeón:</strong> «Abre cada criterio para ver un ejemplo»</div>
+      </details>
+    </div>
+  </aside>
+
+  <aside class="paleta p-der" aria-label="Sugerencias del diagramador">
+    <div class="paleta__cabeza"><span class="paleta__agarre" aria-hidden="true"></span><h2>El diagramador sugiere</h2><button class="paleta__plegar" aria-label="Plegar">–</button></div>
+    <div class="paleta__cuerpo">
+      <p class="sub-sec" style="margin:0 0 4px">Toca una sugerencia para ver dónde va en la pantalla.</p>
+      <div class="sugerencia" data-bloque="21" data-et="1 · Falta aire"><span class="pin-n">1</span><div><h3>Falta aire antes del comparativo</h3><small class="bloque-ref">Bloque 21 de la pantalla</small><p>A 390 px queda pegado al bloque anterior (8 px).</p><span class="eleccion"><button class="no" aria-pressed="false">Descartar</button><button class="si" aria-pressed="true">Aplicar</button></span></div></div>
+      <div class="sugerencia" data-bloque="16" data-et="2 · Pasos a 390 px"><span class="pin-n" style="background:#9AA3B5">2</span><div><h3>Los pasos no caben a 390 px</h3><small class="bloque-ref">Bloque 16 de la pantalla</small><p>Propone pasarlas a acordeón en el celular.</p><span class="eleccion"><button class="no" aria-pressed="true">Descartar</button><button class="si" aria-pressed="false">Aplicar</button></span></div></div>
+      <div class="sugerencia" data-bloque="8" data-et="3 · Idea clave"><span class="pin-n">3</span><div><h3>La idea clave pasa desapercibida</h3><small class="bloque-ref">Bloque 8 de la pantalla</small><p>Subirle el contraste al recuadro.</p><span class="eleccion"><button class="no" aria-pressed="false">Descartar</button><button class="si" aria-pressed="true">Aplicar</button></span></div></div>
+      <div class="sugerencia" data-et=""><span class="pin-n" style="background:#9AA3B5">4</span><div><h3>Seis recuadros de destacados en la sección</h3><small class="bloque-ref">Toda la sección: no se enmarca</small><p>Cambiar uno por una pieza gráfica para variar el ritmo.</p><span class="eleccion"><button class="no" aria-pressed="true">Descartar</button><button class="si" aria-pressed="false">Aplicar</button></span></div></div>
+    </div>
+  </aside>
+
+  <div class="muelle" role="toolbar" aria-label="Acciones de la sección">
+    <span class="anchos" role="group" aria-label="Ancho de la pantalla"><button aria-pressed="true" data-ancho="100%">Computador</button><button aria-pressed="false" data-ancho="390px">Celular</button></span>
+    <span class="muelle__sep"></span>
+    <button class="boton boton--fantasma">Rehacer</button>
+    <button class="boton" data-escena="ilustracion">Ilustrar</button>
+    <button class="boton boton--principal">Enviar: aplicar 1 y 3</button>
+  </div>
+</section>
+
+<!-- ================= 4 · Ilustración sobre la pantalla ================= -->
+<section class="escena" id="ilustracion">
+  <div class="lienzo"><div class="lienzo__marco" style="width:100%"><iframe data-src="tema1.html" tabindex="-1" title="Pantalla de fondo"></iframe></div></div>
+  <div class="velo"></div>
+  <div class="ilus" role="dialog" aria-label="Aprobar la ilustración">
+    <div class="ilus__dibujo">
+      <svg viewBox="0 0 360 240" width="100%" style="max-width:420px" font-family="Atkinson Hyperlegible, system-ui" font-size="13">
+        <g fill="#3F2E75" opacity=".85"><circle cx="40" cy="30" r="7"/><circle cx="80" cy="18" r="7"/><circle cx="125" cy="34" r="7"/><circle cx="170" cy="16" r="7"/><circle cx="215" cy="30" r="7"/><circle cx="260" cy="20" r="7"/><circle cx="305" cy="34" r="7"/><circle cx="60" cy="52" r="7"/><circle cx="150" cy="56" r="7"/><circle cx="240" cy="54" r="7"/><circle cx="320" cy="58" r="7"/></g>
+        <path d="M20 74 H340 L215 162 V202 H145 V162 Z" fill="#EFEAF8" stroke="#3F2E75" stroke-width="2"/>
+        <text x="180" y="104" text-anchor="middle" fill="#3F2E75" font-weight="700">muchos datos</text>
+        <text x="180" y="144" text-anchor="middle" fill="#3F2E75">criterio</text>
+        <circle cx="180" cy="222" r="12" fill="#E0A100"/><text x="180" y="227" text-anchor="middle" fill="#fff" font-weight="700">?</text>
+        <text x="200" y="227" fill="#333">una pregunta clara</text>
+      </svg>
+    </div>
+    <div class="ilus__texto">
+      <h2>Ilustración de apertura</h2>
+      <p class="sub-sec">Del dato a la pregunta</p>
+      <dl>
+        <dt>La idea</dt><dd>Muchos datos solo sirven si pasan por un criterio y terminan en una pregunta clara.</dd>
+        <dt>Por qué</dt><dd>El Word dice <q>tomar una decisión con datos empieza antes de abrir la hoja de cálculo</q>.</dd>
+        <dt>Dónde va</dt><dd>Después del párrafo de apertura, antes del acordeón 1.1.</dd>
+      </dl>
+      <div class="ilus__acciones">
+        <input aria-label="Pide un cambio a la ilustración" placeholder="Por ejemplo: el embudo en vertical">
+        <div><button class="boton">Pedir cambio</button><button class="boton">Descartar</button></div>
+        <button class="boton boton--principal boton--grande" data-escena="revision">Aprobar e insertar</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<aside class="guia" aria-label="Guía del mockup (no va en la herramienta)">
+  <div class="guia__cabeza"><span>Guía del mockup · no va en la herramienta</span><span><span id="guia-n"></span> · <button class="guia__plegar" id="guia-plegar">Ocultar</button></span></div>
+  <p class="guia__titulo" id="guia-t"></p>
+  <p class="guia__texto" id="guia-x"></p>
+  <div class="guia__botones"><button class="boton" id="guia-atras">Anterior</button><button class="boton boton--principal" id="guia-sig">Siguiente</button></div>
+</aside>
+
+<script>
+  const DIST = 'curso/';
+  const cargadas = new Set();
+  function cargar(escena) {
+    for (const f of escena.querySelectorAll('iframe[data-src],iframe[data-ruta]')) if (!f.src) f.src = f.dataset.ruta || DIST + f.dataset.src;
+  }
+  function escalar() {
+    for (const f of document.querySelectorAll('.pagina__hoja iframe')) if (f.parentElement.clientWidth) f.style.transform = `scale(${f.parentElement.clientWidth / 1440})`;
+  }
+  function ir(id) {
+    for (const s of document.querySelectorAll('.escena')) s.classList.toggle('activa', s.id === id);
+    pintarGuia(id);
+    document.body.classList.toggle('sin-barra', id === 'ingreso');
+    const temprano = ['cursos', 'crear', 'insumos', 'auditar'].includes(id);
+    document.getElementById('barra-fin').style.visibility = temprano ? 'hidden' : 'visible';
+    document.getElementById('ruta-curso').textContent = id === 'crear' ? 'Curso nuevo' : id === 'cursos' ? '' : 'Del dato a la decisión';
+    document.getElementById('ruta-inst').hidden = document.getElementById('ruta-sep').hidden = ['crear', 'cursos'].includes(id);
+    document.getElementById('ruta-sep0').hidden = id === 'cursos';
+    cargar(document.getElementById(id)); escalar(); window.scrollTo(0, 0);
+  }
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-ir],[data-escena]'); if (b) ir(b.dataset.ir || b.dataset.escena);
+    const a = e.target.closest('[data-ancho]');
+    if (a) {
+      for (const x of document.querySelectorAll('[data-ancho]')) x.setAttribute('aria-pressed', String(x === a));
+      const m = document.getElementById('marco'); m.style.width = a.dataset.ancho; m.classList.toggle('lienzo__marco--movil', a.dataset.ancho !== '100%');
+    }
+    const el = e.target.closest('.eleccion button');
+    if (el) for (const x of el.parentElement.children) x.setAttribute('aria-pressed', String(x === el));
+    const pl = e.target.closest('.paleta__plegar');
+    if (pl) { const p = pl.closest('.paleta'); p.classList.toggle('plegada'); pl.textContent = p.classList.contains('plegada') ? '+' : '–'; }
+  });
+  // paletas flotantes: se arrastran por la cabeza
+  for (const p of document.querySelectorAll('.paleta')) {
+    const c = p.querySelector('.paleta__cabeza');
+    c.addEventListener('pointerdown', e => {
+      if (e.target.closest('button')) return;
+      const r = p.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top;
+      p.style.right = 'auto'; c.setPointerCapture(e.pointerId);
+      const mover = m => { p.style.left = (m.clientX - dx) + 'px'; p.style.top = (m.clientY - dy) + 'px'; };
+      c.addEventListener('pointermove', mover);
+      c.addEventListener('pointerup', () => c.removeEventListener('pointermove', mover), { once: true });
+    });
+  }
+  const GUIA = [
+    ['ingreso', 'Entras a OVA Studio', 'La portada con la marca de Scala y, de fondo, cursos reales hechos con la herramienta. A la derecha, tu correo y tu clave.'],
+    ['cursos', 'Ves todos tus cursos', 'Cada curso es una foto de su portada real, que se toma al compilar, con la institución, la fase en la que va y cuánto le falta. Los filtras por institución. Para uno nuevo, «Empezar un curso». Abre «Del dato a la decisión» o dale Siguiente.'],
+    ['crear', 'Empiezas un curso', 'Eliges la institución con un clic y escribes el nombre. A la derecha ves la maqueta vacía con la que arranca: sus secciones se van a llenar con el texto del Word.'],
+    ['insumos', 'Cargas los insumos', 'Una tarjeta por insumo: el Word, las figuras del diseñador, los medios y las preguntas. Arrastras el archivo a su tarjeta; si un insumo no va en este curso, «No aplica». Cuando están todos, «Auditar los insumos».'],
+    ['auditar', 'La auditoría te dice si puedes seguir', 'El agente revisa todo y te da el veredicto en grande. Debajo, el menú que armó desde el Word y los errores de origen: quién lo corrige y qué pieza detiene. Un error detiene su pieza, no el curso.'],
+    ['mesa', 'Así abres un curso', 'Cada sección del curso es una página. Las que ya están hechas se ven tal cual quedaron; las pendientes son una hoja en blanco con los rótulos rojos que trae el Word. La que sigue tiene un borde dorado y su botón. Dale «Maquetar esta sección».'],
+    ['plan', 'El diagramador te propone el plan', 'A la izquierda, cada bloque como viene en el Word (los rótulos en rojo). A la derecha, la pieza del curso que propone para ese bloque. Si algo no te gusta, lo escribes abajo y lo rehace; si te sirve, «Aprobar y maquetar».'],
+    ['revision', 'Revisas la sección ya hecha', 'La pantalla del curso ocupa todo. Encima flotan dos ventanas que puedes mover o plegar: a la izquierda si el texto del Word quedó completo, a la derecha lo que sugiere el diagramador. Pasa el mouse o toca una sugerencia: la pantalla baja hasta ese bloque y lo enmarca en dorado. El diagramador dice el número de bloque, el mismo que ya da la herramienta que mide la pantalla. Si una sugerencia es de toda la sección, como la 4, no se enmarca nada. Eliges Aplicar o Descartar en cada una y das «Enviar».'],
+    ['ilustracion', 'Apruebas la ilustración', 'Si la sección lleva ilustración, el ilustrador te muestra el dibujo con la idea, el porqué y dónde va. Nada se pone en el curso hasta que apruebes; si la apruebas, vuelves a la revisión con la sección actualizada.']
+  ];
+  function pintarGuia(id) {
+    const i = GUIA.findIndex(g => g[0] === id);
+    document.getElementById('guia-n').textContent = `${i + 1} de ${GUIA.length}`;
+    document.getElementById('guia-t').textContent = GUIA[i][1];
+    document.getElementById('guia-x').textContent = GUIA[i][2];
+    document.getElementById('guia-atras').disabled = i === 0;
+    const sig = document.getElementById('guia-sig');
+    sig.textContent = i === GUIA.length - 1 ? 'Volver al inicio' : 'Siguiente';
+    sig.onclick = () => ir(GUIA[(i + 1) % GUIA.length][0]);
+    document.getElementById('guia-atras').onclick = () => ir(GUIA[Math.max(0, i - 1)][0]);
+  }
+  document.getElementById('guia-plegar').onclick = e => { const g = e.target.closest('.guia'); g.classList.toggle('plegada'); e.target.textContent = g.classList.contains('plegada') ? 'Mostrar' : 'Ocultar'; };
+  // Marco sobre el bloque real de la pantalla (necesita el mismo origen: abrir con servidor local)
+  const ESTILO_MARCO = `.kit-marco{outline:3px solid #F8B716!important;outline-offset:8px;border-radius:10px;position:relative}
+    .kit-marco::before{content:attr(data-kit);position:absolute;top:-38px;left:-8px;z-index:50;background:#F8B716;color:#261D4A;font:700 13px/1 system-ui,sans-serif;padding:7px 10px;border-radius:7px 7px 7px 0;white-space:nowrap}`;
+  function marcar(sug) {
+    for (const x of document.querySelectorAll('.sugerencia')) x.classList.toggle('activa', x === sug);
+    let doc; try { doc = document.getElementById('previa').contentDocument; } catch { doc = null; }
+    if (!doc || !doc.body) { avisoOrigen(); return; }
+    if (!doc.getElementById('kit-estilo')) doc.head.append(Object.assign(doc.createElement('style'), { id: 'kit-estilo', textContent: ESTILO_MARCO }));
+    for (const e of doc.querySelectorAll('.kit-marco')) { e.classList.remove('kit-marco'); e.removeAttribute('data-kit'); }
+    // El número de bloque es el que reporta medir-pantalla.js: los hijos visibles de la pantalla, en orden
+    const pantalla = doc.querySelector('.ova-screen');
+    const hijos = pantalla ? [...pantalla.children].filter(e => !['SCRIPT', 'STYLE', 'TEMPLATE'].includes(e.tagName) && e.getClientRects().length) : [];
+    const el = sug.dataset.bloque ? hijos[sug.dataset.bloque - 1] : null;
+    if (!el) return;
+    el.classList.add('kit-marco'); el.dataset.kit = sug.dataset.et;
+    for (let a = el; a; a = a.parentElement) a.style.scrollBehavior = 'auto';
+    el.scrollIntoView({ behavior: 'auto', block: 'center' });
+  }
+  function avisoOrigen() {
+    if (document.getElementById('aviso-origen')) return;
+    const a = Object.assign(document.createElement('div'), { id: 'aviso-origen', className: 'recompilado', textContent: 'Para ver el marco abre el mockup con el servidor local (ver la guía).' });
+    a.style.background = '#A85F10'; a.style.top = '120px'; document.body.append(a);
+  }
+  document.addEventListener('click', e => { const sug = e.target.closest('.sugerencia'); if (sug && !e.target.closest('.eleccion')) marcar(sug); });
+  for (const sug of document.querySelectorAll('.sugerencia')) sug.addEventListener('mouseenter', () => marcar(sug));
+  const pm = new URLSearchParams(location.search).get('marcar');
+  if (pm) document.getElementById('previa').addEventListener('load', () => setTimeout(() => marcar(document.querySelectorAll('.sugerencia')[pm - 1]), 600));
+  window.addEventListener('resize', escalar);
+  ir(new URLSearchParams(location.search).get('escena') || 'ingreso');
+  if (new URLSearchParams(location.search).get('guia') === '0') { const g = document.querySelector('.guia'); if (g) g.remove(); } // ?guia=0 oculta la guía (deck de la reunión)
+</script>
+</body>
+</html>

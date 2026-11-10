@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Un curso desde la terminal · Scala Learning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Newsreader:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#303651; --violeta:#503B96; --lavanda:#8A79C9; --amarillo:#F8B716; --violeta-deep:#261D4A;
+    --bg:#FAF6F3; --crema:#F4EFE7; --blanco:#FFFFFF; --linea:#E7E0D8; --linea-2:#D6CEC3;
+    --ink:#262A3A; --ink-2:#5C6072; --ink-3:#8E92A0;
+    --grad:linear-gradient(100deg,#261D4A 0%,#3F2E75 32%,#503B96 55%,#9E7452 78%,#F8B716 100%);
+    --sans:'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+    --serif:'Newsreader',Georgia,serif;
+    --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+    --sombra:0 24px 60px rgba(48,54,81,.16);
+    --sombra-sm:0 8px 28px rgba(48,54,81,.10);
+    --r:18px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:clamp(15px,1.25vw,20px);line-height:1.5;-webkit-font-smoothing:antialiased;overflow:hidden}
+  a{color:inherit}
+  strong{font-weight:600}
+  em{font-family:var(--serif);font-style:italic;font-size:1.06em}
+  code{font-family:var(--mono);font-size:.84em;background:var(--crema);padding:.1em .45em;border-radius:6px}
+
+  .deck{position:fixed;inset:0}
+  .slide{position:absolute;inset:0;display:none;padding:5.5vh 6vw 9vh;flex-direction:column;justify-content:center;opacity:0;transform:translateY(8px);transition:opacity .35s ease,transform .35s ease}
+  .slide.activa{display:flex;opacity:1;transform:none}
+  .slide > *{max-width:100%}
+
+  .marca{position:fixed;left:3.2vw;bottom:3.4vh;height:clamp(28px,3.6vh,40px);z-index:5;opacity:.92}
+  .marca img{height:100%;width:auto;display:block}
+  .contador{position:fixed;right:3.2vw;bottom:3.6vh;font-size:.72em;letter-spacing:.14em;color:var(--ink-3);font-variant-numeric:tabular-nums;z-index:5}
+  .progreso{position:fixed;left:0;bottom:0;height:3px;width:0;background:var(--violeta);z-index:6;transition:width .35s ease}
+  .parte-tag{position:fixed;top:3.2vh;left:3.2vw;font-size:.68em;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);font-weight:600;z-index:5}
+  .parte-tag b{color:var(--violeta);font-weight:700;margin-right:.6em}
+
+  .eyebrow{display:flex;align-items:center;gap:.7em;font-size:.72em;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--ink-2);margin:0 0 1.1em}
+  .eyebrow::before{content:"";width:2.2em;height:3px;background:var(--amarillo);border-radius:2px}
+  h1{font-weight:700;color:var(--navy);font-size:clamp(2.2rem,5.4vw,5rem);line-height:1.02;letter-spacing:-.02em;margin:0 0 .35em;text-wrap:balance}
+  h1 em{color:var(--violeta)}
+  h2{font-weight:700;color:var(--navy);font-size:clamp(1.6rem,3.2vw,2.9rem);line-height:1.08;letter-spacing:-.015em;margin:0 0 .5em;text-wrap:balance}
+  h2 .fino{font-weight:300;color:var(--ink-2)}
+  h2 em{color:var(--violeta)}
+  h2 code{font-size:.72em;vertical-align:middle;background:#ECE7F7;color:var(--violeta)}
+  h3{font-size:1.05em;font-weight:700;color:var(--navy);margin:0 0 .35em}
+  p{margin:0 0 .7em;max-width:62ch}
+  .lede{font-size:1.18em;color:var(--ink-2);line-height:1.45;max-width:56ch;font-weight:300}
+  ul{margin:0;padding-left:1.1em}
+  li{margin:0 0 .45em}
+  li::marker{color:var(--lavanda)}
+  .nota{font-size:.82em;color:var(--ink-3);margin-top:1em}
+
+  .dos{display:grid;grid-template-columns:1fr 1fr;gap:3.5vw;align-items:center}
+  .dos > *,.tres > *,.cuatro > *{min-width:0}
+  .dos.ancha-der{grid-template-columns:5fr 7fr}
+  .dos.ancha-izq{grid-template-columns:7fr 5fr}
+  .tres{display:grid;grid-template-columns:repeat(3,1fr);gap:2vw}
+  .cuatro{display:grid;grid-template-columns:repeat(4,1fr);gap:1.6vw}
+  .pila{display:grid;gap:1.2vh}
+  .arriba{align-items:start}
+
+  .captura{border-radius:var(--r);box-shadow:var(--sombra);overflow:hidden;background:#fff;border:1px solid var(--linea)}
+  .captura img{display:block;width:100%;height:auto}
+  .captura.movil{width:min(20vw,240px);border-radius:28px;border:6px solid var(--navy);box-shadow:var(--sombra)}
+  .captura.recorte img{object-fit:cover;object-position:top;height:33vh}
+  .pie{font-size:.78em;color:var(--ink-3);margin-top:.9em}
+  .lienzo{position:relative}
+  .sello{position:absolute;display:flex;align-items:center;gap:.5em;background:var(--navy);color:#fff;font-size:.72em;font-weight:600;padding:.35em .8em;border-radius:999px;box-shadow:var(--sombra-sm);white-space:nowrap}
+  .sello::before{content:"";width:.55em;height:.55em;border-radius:50%;background:var(--amarillo)}
+  .sello.studio{background:var(--violeta)}
+
+  .tarjeta{background:var(--blanco);border:1px solid var(--linea);border-radius:var(--r);padding:1.3em 1.4em;box-shadow:var(--sombra-sm)}
+  .tarjeta h3{display:flex;align-items:baseline;gap:.6em}
+  .tarjeta .n{font-family:var(--serif);font-style:italic;color:var(--amarillo);font-size:1.4em;line-height:1}
+  .tarjeta p{font-size:.9em;color:var(--ink-2);margin:0}
+  .tarjeta.oscura{background:var(--navy);color:#fff;border-color:transparent}
+  .tarjeta.oscura h3{color:#fff}
+  .tarjeta.oscura p{color:#CFD2E0}
+
+  .chip{display:inline-flex;align-items:center;gap:.45em;font-size:.7em;font-weight:700;letter-spacing:.05em;padding:.3em .8em;border-radius:999px;background:var(--crema);color:var(--ink-2);vertical-align:middle;white-space:nowrap}
+  .chip::before{content:"";width:.6em;height:.6em;border-radius:50%;background:currentColor}
+  .chip.tu{background:#E2F0EA;color:#1E6E5A}
+  .chip.ia{background:#ECE7F7;color:var(--violeta)}
+  .chip.sc{background:#F8ECC8;color:#7A5A00}
+
+  pre{font-family:var(--mono);font-size:.72em;line-height:1.55;background:var(--navy);color:#ECE9E2;border-radius:14px;padding:1.1em 1.3em;overflow:auto;margin:0;box-shadow:var(--sombra-sm);white-space:pre-wrap}
+  pre .t{color:#9AA0AB} pre .h{color:#F8B716} pre .k{color:#B4A3E8} pre .s{color:#8BD4B5} pre .r{color:#F28B82}
+  pre.grande{font-size:.8em}
+  pre.ascii{white-space:pre;font-size:.58em;line-height:1.45;background:var(--blanco);color:var(--ink);border:1px solid var(--linea)}
+  pre.ascii b{color:var(--violeta);font-weight:600}
+  pre.ascii .c{color:var(--ink-3)}
+
+  table.medidas{width:100%;border-collapse:collapse;font-size:.78em;background:var(--blanco);border-radius:var(--r);overflow:hidden;box-shadow:var(--sombra-sm)}
+  table.medidas th,table.medidas td{text-align:left;padding:.5em .85em;border-bottom:1px solid var(--linea);vertical-align:top}
+  table.medidas th{font-size:.72em;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);background:var(--crema)}
+  table.medidas td:first-child{font-weight:600;color:var(--navy)}
+  table.medidas td.rojo{color:#C00000;font-weight:600;white-space:nowrap}
+  table.medidas td.mono{font-family:var(--mono);font-size:.9em;color:var(--violeta);white-space:nowrap}
+
+  .cadena{display:grid;grid-template-columns:repeat(5,1fr);gap:1vw}
+  .paso{background:var(--blanco);border:1px solid var(--linea);border-radius:14px;padding:.9em 1em;box-shadow:var(--sombra-sm);position:relative}
+  .paso .num{font-family:var(--serif);font-style:italic;color:var(--amarillo);font-size:1.5em;line-height:1}
+  .paso code{display:block;background:none;padding:0;color:var(--violeta);font-weight:600;font-size:.8em;margin:.3em 0 .35em}
+  .paso p{font-size:.78em;color:var(--ink-2);margin:0}
+  .paso .deja{margin-top:.5em;padding-top:.45em;border-top:1px dashed var(--linea-2);font-size:.72em;color:var(--ink-3)}
+  .paso .deja b{color:var(--navy);font-weight:600}
+  .paso.foco{background:var(--navy);border-color:transparent}
+  .paso.foco code{color:var(--amarillo)} .paso.foco p,.paso.foco .deja{color:#CFD2E0} .paso.foco .deja b{color:#fff}
+
+  .frase{font-family:var(--serif);font-style:italic;font-size:clamp(1.6rem,3.2vw,2.9rem);line-height:1.2;color:var(--navy);max-width:24ch;margin:0 0 .6em}
+  .frase b{font-style:normal;font-family:var(--sans);font-weight:700;color:var(--violeta)}
+
+  .slide.portada,.slide.cierre{padding-left:9vw}
+  .banda{position:absolute;left:0;top:0;bottom:0;width:1.2vw;background:var(--grad)}
+  .slide.portada .logo-grande{height:clamp(44px,7vh,80px);margin-bottom:6vh}
+  .slide.portada .logo-grande img{height:100%}
+  .fecha{font-size:.82em;color:var(--ink-3);letter-spacing:.1em;text-transform:uppercase;font-weight:600;margin-top:4vh}
+
+  .indice{display:grid;grid-template-columns:repeat(6,1fr);gap:1.2vw;margin-top:2vh}
+  .indice .tarjeta{min-height:20vh;display:flex;flex-direction:column;justify-content:space-between;padding:1.1em 1.1em}
+  .indice .num{font-family:var(--serif);font-style:italic;font-size:2.2em;color:var(--amarillo);line-height:1}
+  .indice h3{font-size:.95em;margin:.4em 0 .2em}
+  .indice p{font-size:.8em}
+
+  .ata{margin-top:1.4vh;padding:.7em 1em;border-left:3px solid var(--amarillo);background:var(--crema);border-radius:0 12px 12px 0;font-size:.86em;color:var(--ink-2)}
+  .ata b{color:var(--violeta)}
+
+  .notas{display:none}
+  body.con-notas .notas{display:block;position:fixed;left:0;right:0;bottom:0;background:var(--navy);color:#ECE9E2;padding:1.4vh 6vw 2.2vh;font-size:.86em;line-height:1.45;z-index:8;border-top:3px solid var(--amarillo);max-height:32vh;overflow:auto}
+  body.con-notas .notas::before{content:"Notas";display:block;font-size:.7em;letter-spacing:.16em;text-transform:uppercase;color:var(--amarillo);font-weight:700;margin-bottom:.3em}
+  .ayuda{position:fixed;top:3.2vh;right:3.2vw;font-size:.66em;color:var(--ink-3);letter-spacing:.06em;z-index:5}
+  .ayuda kbd{font-family:var(--mono);background:var(--crema);border:1px solid var(--linea-2);border-radius:5px;padding:.05em .4em;margin:0 .1em}
+
+  @media (max-aspect-ratio:4/3){
+    .dos,.dos.ancha-der,.dos.ancha-izq{grid-template-columns:1fr;gap:2vh}
+    .tres,.cuatro,.cadena,.indice{grid-template-columns:1fr 1fr}
+  }
+  @media print{
+    body{overflow:visible;background:#fff}
+    .deck{position:static}
+    .slide{position:relative;display:flex!important;opacity:1!important;transform:none!important;height:100vh;page-break-after:always;padding:6vh 6vw}
+    .marca,.contador,.progreso,.parte-tag,.ayuda,.notas{display:none!important}
+  }
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+  <!-- 0 · PORTADA -->
+  <section class="slide portada" data-parte="">
+    <div class="banda"></div>
+    <div class="logo-grande"><img src="presentacion-terminal/scala-logo-navy.svg" alt="Scala Learning"></div>
+    <p class="eyebrow">Scala Learning · recursos educativos digitales</p>
+    <h1>Un curso <em>desde la terminal</em></h1>
+    <p class="lede">Dos cursos que no existían esta mañana, Comunicación asertiva para Andina y Finanzas personales para Panamericana, producidos comando por comando hasta el tema 1. Y hacia dónde va esto con OVA Studio.</p>
+    <p class="fecha">Noviembre de 2026 · Francisco Lizcano, arquitecto OVA</p>
+    <aside class="notas">La vez pasada les mostré el proceso al revés, del producto al Word. Hoy va al derecho y con las manos en la masa: cómo se produce un curso desde la terminal, con dos cursos que no existían esta mañana. Al final, OVA Studio; pero primero el proceso real, porque Studio solo le pone botones.</aside>
+  </section>
+
+  <!-- 1 · MAPA -->
+  <section class="slide" data-parte="">
+    <p class="eyebrow">El recorrido</p>
+    <h2>Seis paradas, <span class="fino">al derecho</span></h2>
+    <div class="indice">
+      <div class="tarjeta"><span class="num">1</span><div><h3>El workspace</h3><p>Qué les vamos a compartir y cómo funciona.</p></div></div>
+      <div class="tarjeta"><span class="num">2</span><div><h3>La cadena</h3><p>Once comandos en orden y qué deja cada uno.</p></div></div>
+      <div class="tarjeta"><span class="num">3</span><div><h3>Demo Andina</h3><p>De carpeta vacía a tema 1 compilado.</p></div></div>
+      <div class="tarjeta"><span class="num">4</span><div><h3>Demo Panamericana</h3><p>Mismo proceso, otra piel, un error de origen.</p></div></div>
+      <div class="tarjeta"><span class="num">5</span><div><h3>Lo que no cambia</h3><p>Cuatro reglas que no se mueven.</p></div></div>
+      <div class="tarjeta"><span class="num">6</span><div><h3>OVA Studio</h3><p>La misma cadena con botones; en curso.</p></div></div>
+    </div>
+    <p class="ata">En cada paso de la demo, a la izquierda va la terminal y a la derecha la pantalla de OVA Studio que hace lo mismo con botones. <b>Esto que ven a la derecha es lo que el agente hace por dentro. Hoy se ve como texto; hacia esto va.</b></p>
+    <aside class="notas">Seis paradas. En las demos verán siempre dos columnas: la terminal real a la izquierda y, a la derecha, la pantalla de Studio que hace lo mismo con botones. La frase que ata las dos se repite en cada paso.</aside>
+  </section>
+
+  <!-- ===== PARTE 1 · EL WORKSPACE ===== -->
+  <section class="slide" data-parte="1 · El workspace">
+    <p class="eyebrow">Lo que se comparte</p>
+    <h2>Un repositorio, <span class="fino">tres cosas que no se mezclan</span></h2>
+    <div class="dos ancha-izq arriba">
+<pre class="ascii">   <b>motor/</b>                <b>instituciones/&lt;x&gt;/skin/</b>       <b>instituciones/&lt;x&gt;/cursos/&lt;y&gt;/fuente/</b>
+   core.css core.js      fuentes.html skin.css         ova.config.js  paleta.css
+   plantillas/*.html     skin.js  paleta.css  logos/    contenido/*.html  assets/
+        │                        │                              │
+        └────────────────────────┼──────────────────────────────┘
+                                 ▼
+                     node scripts/compilar.js &lt;x&gt;/&lt;y&gt;
+                                 │
+                    ┌────────────┴────────────┐
+                    ▼                         ▼
+       cursos/&lt;y&gt;/dist/spa/          cursos/&lt;y&gt;/dist/multipagina/
+       <span class="c">una sola página (#/&lt;id&gt;)</span>      <span class="c">un .html por pantalla</span>
+       <span class="c">entrega estándar</span>              <span class="c">respaldo LMS · se compara con el Word</span></pre>
+      <div>
+        <ul>
+          <li><strong>El motor</strong>: estilos, comportamiento de los componentes y plantillas. Uno solo; nadie lo toca al hacer un curso.</li>
+          <li><strong>La piel de cada institución</strong>: fuentes, colores, logos. Lo que hace que un curso de Andina se vea de Andina.</li>
+          <li><strong>El curso</strong>: el contenido de cada pantalla, el menú y las imágenes. Lo único que cambia de un curso a otro.</li>
+          <li>El motor nunca sabe de qué institución es: las plantillas traen tres marcadores vacíos y el compilador los rellena con la piel del curso. <strong>Andina no hereda nada de Scala porque su carpeta no lo tiene.</strong></li>
+        </ul>
+      </div>
+    </div>
+    <aside class="notas">Antes de la demo, qué les vamos a compartir: un repositorio privado, el workspace de Scala. Adentro está todo: motor, piel de cada institución, cursos y la terminal con los comandos. Reciben un enlace y un instalador. Señalo los tres bloques de la primera fila, de izquierda a derecha: motor, piel, curso. Luego la flecha al compilador y las dos salidas: la de una página para el LMS y la de un archivo por pantalla, que es la que comparamos texto a texto contra el Word.</aside>
+  </section>
+
+  <section class="slide" data-parte="1 · El workspace">
+    <div class="dos ancha-izq">
+      <div>
+        <p class="eyebrow">Visto con botones</p>
+        <h2>Cada tarjeta <span class="fino">es una carpeta de curso</span></h2>
+        <p>En el workspace cada curso es una carpeta con su <code>ESTADO.md</code>: qué insumos llegaron, qué secciones están maquetadas, si está auditado y si se entregó. Todos los comandos lo leen al empezar y lo marcan al terminar.</p>
+        <p>En la terminal, <code>/ova-retomar</code> lo resume y dice el siguiente comando. Aquí es la tarjeta: la institución, la fase en la que va y cuánto le falta.</p>
+        <p class="ata"><b>Esto que ven a la derecha es lo que el agente hace por dentro.</b> Hoy se ve como texto en la terminal; hacia esto va.</p>
+      </div>
+      <div class="lienzo">
+        <div class="captura"><img src="presentacion-terminal/studio-cursos.webp" alt="OVA Studio, pantalla Tus cursos: tarjetas con la portada de cada curso, su institución y su fase"></div>
+        <span class="sello studio" style="left:1.2em;top:1.2em">OVA Studio · Propuesta B</span>
+      </div>
+    </div>
+    <aside class="notas">Esto es lo mismo visto con botones: cada tarjeta es una carpeta del workspace, con su institución y el punto donde va. Lo que en la terminal me dice /ova-retomar, aquí es la tarjeta. Primera vez que digo la frase: esto que ven a la derecha es lo que el agente hace por dentro; hoy se ve como texto, hacia esto va.</aside>
+  </section>
+
+  <!-- ===== PARTE 2 · LA CADENA ===== -->
+  <section class="slide" data-parte="2 · La cadena">
+    <p class="eyebrow">Once comandos, en orden</p>
+    <h2>La cadena <code>/ova-*</code> <span class="fino">y qué deja cada uno</span></h2>
+    <div class="cadena">
+      <div class="paso"><span class="num">1</span><code>/ova-crear</code><p>La maqueta vacía de la institución.</p><div class="deja">Deja <b>ESTADO.md</b> y los cajones de insumos</div></div>
+      <div class="paso"><span class="num">2</span><code>/ova-insumos</code><p>Pide cada insumo, lo comprueba, lo marca.</p><div class="deja">Deja la <b>tabla Insumos</b> en cargado</div></div>
+      <div class="paso"><span class="num">3</span><code>/ova-auditar-insumos</code><p>Fidelidad lee el Word completo y arma el curso.</p><div class="deja">Deja <b>INSUMOS LISTOS</b> o <b>ERRORES-ORIGEN</b></div></div>
+      <div class="paso foco"><span class="num">4</span><code>/ova-maquetar</code><p>Una sección: plan, maqueta, verificadores, revisión.</p><div class="deja">Deja <b>la pantalla</b> y la <b>capa editorial</b></div></div>
+      <div class="paso"><span class="num">5</span><code>/ova-ilustrar</code><p>Opcional: la ilustración de apertura, si se aprueba.</p><div class="deja">Deja <b>ILUSTRACIONES.md</b> y el SVG</div></div>
+      <div class="paso"><span class="num">6</span><code>/ova-compilar</code><p>Compila y sirve el curso para verlo.</p><div class="deja">Deja <b>dist/spa</b> y <b>dist/multipagina</b></div></div>
+      <div class="paso"><span class="num">7</span><code>/ova-auditar</code><p>Los dos verificadores y fidelidad sobre todo el curso.</p><div class="deja">Deja <b>APROBADO</b> o <b>CON HALLAZGOS</b></div></div>
+      <div class="paso"><span class="num">8</span><code>/ova-ajustes</code><p>Normaliza una ronda del cliente en una tabla.</p><div class="deja">Deja <b>ajustes-fecha.md</b>, sin aplicar nada</div></div>
+      <div class="paso"><span class="num">9</span><code>/ova-aplicar-ajustes</code><p>Aplica solo las filas aprobadas.</p><div class="deja">Deja el curso <b>recompilado y verificado</b></div></div>
+      <div class="paso"><span class="num">10</span><code>/ova-entregar</code><p>Se niega con huecos, errores abiertos o sin auditoría.</p><div class="deja">Deja el <b>proyecto npm</b> y los <b>ZIP</b></div></div>
+    </div>
+    <p class="nota"><code>/ova-retomar</code> se puede correr en cualquier momento: lee el ESTADO.md y dice dónde va el curso y cuál es el siguiente comando. Ninguno hace commit ni publica solo.</p>
+    <aside class="notas">La cadena completa. Cada comando se escribe en Claude Code, por ejemplo /ova-maquetar andina/mi-curso tema1. El eje es el ESTADO.md del curso: todos lo leen primero y lo marcan al final. El cuarto, maquetar, es el que vamos a ver con lupa.</aside>
+  </section>
+
+  <section class="slide" data-parte="2 · La cadena">
+    <p class="eyebrow">El comando central</p>
+    <h2><code>/ova-maquetar</code> <span class="fino">en cuatro pasos, una sección por vez</span></h2>
+    <div class="cuatro">
+      <div class="tarjeta"><h3><span class="n">1</span> Plan</h3><p>El <strong>diagramador</strong> lee el Word y propone una pieza del catálogo para cada bloque. <strong>Nada se escribe hasta que el arquitecto aprueba.</strong> Cada duda se pregunta una por una.</p></div>
+      <div class="tarjeta"><h3><span class="n">2</span> Maqueta</h3><p>Se escribe la pantalla con el texto literal del Word, sus negrillas en <code>&lt;strong&gt;</code> y los llamados a la acción del Word o los del catálogo.</p></div>
+      <div class="tarjeta"><h3><span class="n">3</span> Verificadores</h3><p>Compila y corren dos scripts sin IA: uno coteja cada párrafo y cada negrilla del Word; el otro, cada rótulo con su pieza.</p></div>
+      <div class="tarjeta"><h3><span class="n">4</span> Revisión</h3><p>El mismo diagramador mide la pantalla a 1440 y 390 px y propone: aire, repeticiones, contraste, desbordes. <strong>Propone; no cambia nada solo.</strong></p></div>
+    </div>
+    <p class="nota">Lo que no viene del Word, un pie o un icono, se anota en la capa editorial para que el cliente lo valide. Al final se marca el ESTADO.md: Maquetada y Diagramada con la fecha.</p>
+    <aside class="notas">Maquetar es el corazón. Cuatro pasos: plan, maqueta, verificadores, revisión. Dos puertas donde decido yo: después del plan y después de la revisión. Entre medias, los scripts, que no se cansan ni se distraen.</aside>
+  </section>
+
+  <!-- ===== PARTE 3 · DEMO ANDINA ===== -->
+  <section class="slide" data-parte="3 · Demo Andina">
+    <div class="dos">
+      <div>
+        <p class="eyebrow">Paso 1 · crear</p>
+        <h2><code>/ova-crear</code> <span class="fino">andina/comunicacion-asertiva</span></h2>
+<pre class="grande"><span class="t">›</span> node scripts/nuevo-curso.js andina/comunicacion-asertiva
+
+Curso creado: instituciones/andina/cursos/comunicacion-asertiva
+  Estado: instituciones/andina/cursos/comunicacion-asertiva/ESTADO.md
+
+Siguiente:
+  /ova-insumos andina/comunicacion-asertiva
+  <span class="t">(el DI, las preguntas, las imágenes, la multimedia y las descargas)</span></pre>
+        <p class="nota">No pide el nombre del curso: el título y el subtítulo saldrán literales del Word en el paso 3. La maqueta vacía trae portada, temario, introducción, temas, evaluación y referencias con huecos.</p>
+      </div>
+      <div class="lienzo">
+        <div class="captura"><img src="presentacion-terminal/studio-insumos.webp" alt="OVA Studio: los cajones de insumos del curso, uno por tipo"></div>
+        <span class="sello studio" style="left:1.2em;top:1.2em">OVA Studio · insumos</span>
+      </div>
+    </div>
+    <aside class="notas">El primer comando crea el curso: institución y nombre de carpeta, y deja la maqueta vacía de Andina con un ESTADO.md que acompaña al curso hasta la entrega. A la derecha, la misma decisión con botones y los cajones donde van a caer los insumos.</aside>
+  </section>
+
+  <section class="slide" data-parte="3 · Demo Andina">
+    <p class="eyebrow">Paso 2 · insumos</p>
+    <h2><code>/ova-insumos</code> <span class="fino">pide uno por uno, comprueba y marca</span></h2>
+    <table class="medidas">
+      <thead><tr><th>Insumo</th><th>Estado</th><th>Archivo</th><th>Lo que midió la comprobación</th></tr></thead>
+      <tbody>
+        <tr><td>DI (Word)</td><td class="mono">cargado</td><td class="mono">di/DI-comunicacion-asertiva.docx</td><td>«Comunicación asertiva en el trabajo» · 3 temas · introducción, conclusión y referencias · 281 párrafos</td></tr>
+        <tr><td>Imágenes del diseñador</td><td class="mono">cargado</td><td class="mono">imagenes/</td><td>3 imágenes: Imagen-01 (portada), Imagen-02 (tema 1), Imagen-03 (tema 3)</td></tr>
+        <tr><td>Multimedia</td><td class="mono">cargado</td><td class="mono">multimedia/</td><td>Podcast.mp3 · 95 s · video de Vimeo «Video bienvenida», 65 s, en el Word</td></tr>
+        <tr><td>Descargas</td><td class="mono">cargado</td><td class="mono">descargas/</td><td>PDF1.pdf · 2 páginas</td></tr>
+        <tr><td>Preguntas de la evaluación</td><td class="mono">cargado</td><td class="mono">preguntas/Preguntas.docx</td><td>44 párrafos</td></tr>
+      </tbody>
+    </table>
+    <p class="nota">Cada archivo se deja tal cual llega: nunca se edita un insumo. El comando lista los «Vincular Imagen-NN», «Vincular video» y «Vincular PDF» del Word y comprueba que cada uno tenga su archivo. Si uno no aplica, se marca con su motivo; si llega después, se vuelve a correr.</p>
+    <aside class="notas">Los insumos: el Word, las figuras, los medios y las preguntas. Cada uno va a su cajón y el comando comprueba que llegó: abre el Word y encuentra el título y los temas, mide el audio, cuenta las páginas del PDF, consulta el video en Vimeo. No hay botón de maquetar todavía: con los insumos sin revisar no se avanza.</aside>
+  </section>
+
+  <section class="slide" data-parte="3 · Demo Andina">
+    <div class="dos">
+      <div>
+        <p class="eyebrow">Paso 3 · auditar insumos</p>
+        <h2><code>/ova-auditar-insumos</code> <span class="fino">y el curso se arma solo</span></h2>
+<pre><span class="t">›</span> fidelidad-di · modo insumos · andina/comunicacion-asertiva
+<span class="s">INSUMOS LISTOS</span>
+<span class="t">19 rótulos en rojo del Word, los 19 en el catálogo · 0 consultas</span>
+<span class="t">pódcast 95 s = «1 min 35 s» del DI · PDF 2 páginas = «2 páginas» · imágenes sin texto</span>
+<span class="t">dudas, no errores: el conductor del pódcast se presenta como de Scala Learning</span>
+
+<span class="t">›</span> node scripts/armar-curso.js andina/comunicacion-asertiva --di …/DI-comunicacion-asertiva.docx
+Curso: <span class="h">Comunicación asertiva en el trabajo</span>
+Subtítulo: Asignatura - Habilidades directivas
+Temas (3):
+  1. Tres formas de responder · 2 subtemas
+  2. Decir que no y pedir lo que necesita · 2 subtemas
+  3. Dar y recibir retroalimentación · 2 subtemas
+Comentadas en el menú: glosario</pre>
+      </div>
+      <div class="lienzo">
+        <div class="captura"><img src="presentacion-terminal/studio-auditar.webp" alt="OVA Studio: veredicto de la auditoría de insumos, lo que se armó desde el Word y los errores de origen"></div>
+        <span class="sello studio" style="left:1.2em;top:1.2em">OVA Studio · auditar insumos</span>
+      </div>
+    </div>
+    <aside class="notas">Antes de tocar una pantalla, el agente de fidelidad lee el Word completo: título, temas, negrillas, figuras que pide y las que llegaron, duración de los medios. Con eso arma el curso: nombre, subtítulo y menú salen del Word, no los escribe nadie. En Andina salió limpio. Lo que encontró que no es error, como el conductor del pódcast que se presenta como de Scala, va como duda para ustedes.</aside>
+  </section>
+
+  <section class="slide" data-parte="3 · Demo Andina">
+    <div class="dos ancha-izq">
+      <div>
+        <p class="eyebrow">La mesa del curso</p>
+        <h2><code>/ova-retomar</code> <span class="fino">dice dónde va y qué sigue</span></h2>
+<pre>RETOMAR · andina/comunicacion-asertiva
+Insumos: 5 de 5 cargados · Auditoría de insumos: INSUMOS LISTOS (2026-11-09)
+
+  portada       · Inicio                                   —
+  temario       · Contenido de la unidad                   —
+  introduccion  · Introducción                             —
+  tema1         · Tres formas de responder                 —
+  tema2         · Decir que no y pedir lo que necesita     —
+  tema3         · Dar y recibir retroalimentación          —
+  evaluacion    · Actividad formativa                      —
+  referencias   · Referencias                              —
+
+SIGUIENTE: <span class="h">/ova-maquetar andina/comunicacion-asertiva tema1</span></pre>
+        <p class="nota">Las filas de los temas ya tienen el título del Word: las escribió <code>armar-curso.js</code>. Cada sección se maqueta por separado, con su propio plan y su propia revisión.</p>
+      </div>
+      <div class="lienzo">
+        <div class="captura"><img src="presentacion-terminal/studio-mesa.webp" alt="OVA Studio: la mesa del curso, cada sección como una página con su estado y su botón Maquetar"></div>
+        <span class="sello studio" style="left:1.2em;top:1.2em">OVA Studio · la mesa</span>
+      </div>
+    </div>
+    <aside class="notas">Con el curso armado, esto es lo que hay: la lista de secciones con su estado. En la terminal se la pido a /ova-retomar; aquí es la mesa del curso, cada sección como una página. Vamos con el tema 1.</aside>
+  </section>
+
+  <section class="slide" data-parte="3 · Demo Andina">
+    <p class="eyebrow">Paso 4.1 · el plan del diagramador</p>
+    <h2>Cada rótulo del Word, <span class="fino">con su pieza del catálogo</span></h2>
+    <div class="dos ancha-izq arriba">
+      <table class="medidas">
+        <thead><tr><th>Bloque del Word</th><th>Rótulo en rojo</th><th>Componente</th></tr></thead>
+        <tbody>
+          <tr><td>«El propósito de este primer tema…»</td><td>—</td><td>Lead del encabezado</td></tr>
+          <tr><td>Vincular Imagen-02 · Pie</td><td class="rojo">Foto decorativa</td><td class="mono">ova-foto-ancha</td></tr>
+          <tr><td>La respuesta de Lucía · Pregunta / Respuesta</td><td class="rojo">Acordeón</td><td class="mono">ova-acordeon</td></tr>
+          <tr><td>1.1 Pasiva, agresiva y asertiva</td><td>—</td><td class="mono">ua-seccion #tema1-1</td></tr>
+          <tr><td>Tres respuestas al pedido del jefe de Lucía</td><td class="rojo">Pestañas verticales</td><td class="mono">ova-tabs--vertical</td></tr>
+          <tr><td>Importante · «Ser asertivo no garantiza…»</td><td class="rojo">Bloque destacado - fondo claro</td><td class="mono">ova-destacados</td></tr>
+          <tr><td>1.2 Por qué cuesta ser asertivo</td><td>—</td><td class="mono">ua-seccion #tema1-2</td></tr>
+          <tr><td>Tres creencias que frenan la asertividad</td><td class="rojo">Tarjetas conectadas - clara</td><td class="mono">ova-tarjetas--claras</td></tr>
+          <tr><td>«La asertividad no consiste en ganar…»</td><td class="rojo">Banner · fondo oscuro</td><td class="mono">ova-banner</td></tr>
+          <tr><td>«¿Con qué persona de su trabajo…?»</td><td class="rojo">Para reflexionar</td><td class="mono">ova-callout--reflexion</td></tr>
+        </tbody>
+      </table>
+      <div>
+        <div class="captura"><img src="presentacion-terminal/studio-plan.webp" alt="OVA Studio: el plan del diagramador en dos columnas, así viene en el Word y así queda en el curso, con el botón Aprobar y maquetar"></div>
+        <p class="pie">Los 7 rótulos del Word están en el catálogo: 0 consultas, 0 desviaciones. Dos preguntas de criterio, que respondió el arquitecto: solo la foto del DI como apertura, y los títulos de las pestañas sin negrilla, como el Word.</p>
+      </div>
+    </div>
+    <aside class="notas">Cuando le pido al agente que maquete, lo primero no es escribir código: lee el Word y propone una pieza para cada bloque. Izquierda, así viene en el Word; derecha, así queda. El párrafo conserva sus negrillas, la foto del diseñador no se redibuja, las pestañas toman título y contenido del Word. Hoy me hizo dos preguntas y las respondí yo: solo la foto como apertura, porque la ilustración no la pide el Word; y los títulos de las pestañas sin negrilla, como el Word. Y la puerta: nada se escribe hasta que digo que sí.</aside>
+  </section>
+
+  <section class="slide" data-parte="3 · Demo Andina">
+    <div class="dos ancha-izq">
+      <div>
+        <p class="eyebrow">Pasos 4.2 y 4.3 · maqueta y verificadores</p>
+        <h2>Compila, <span class="fino">y dos scripts cotejan contra el Word</span></h2>
+<pre><span class="t">›</span> python3 scripts/optimizar-figuras.py andina/comunicacion-asertiva
+  figura-02-conversacion.png  3178 KB → figura-02-conversacion.webp  65 KB · 2000×1334 → 1600×1067
+
+<span class="t">›</span> node scripts/compilar.js andina/comunicacion-asertiva
+<span class="s">✔ 8/8 pantallas</span> → dist/multipagina/ + dist/spa/index.html
+
+<span class="t">›</span> python3 scripts/componentes-di.py &lt;DI&gt; dist/multipagina --llamados
+  <span class="s">✓</span>  Tarjetas conectadas - clara · «Tres creencias que frenan la asertividad» → ova-tarjetas--claras
+  <span class="s">✓</span>  Banner · fondo oscuro · «La asertividad no consiste en ganar la conversación…» → ova-banner
+  <span class="s">✓</span>  Para reflexionar · «¿Con qué persona de su trabajo suele responder…» → ova-callout--reflexion
+  <span class="s">✓</span>  cada rótulo usa una sola pieza
+  <span class="s">✓</span>  todos los contenedores interactivos tienen su llamado
+
+<span class="t">›</span> python3 scripts/verificar-di.py &lt;DI&gt; dist/multipagina --editorial
+  tema1 · 15 negrillas del Word en &lt;strong&gt; · 0 párrafos partidos · 0 huecos
+  <span class="t">lo que falta del Word está en tema2, tema3, evaluación y referencias: aún sin maquetar</span></pre>
+      </div>
+      <div class="captura"><img src="presentacion-terminal/andina-tema1-1440.webp" alt="Tema 1 de Comunicación asertiva compilado con la piel de Andina: eyebrow Tema 1, título, propósito y la foto decorativa enmarcada"></div>
+    </div>
+    <aside class="notas">Después del sí, el agente escribe la pantalla con el texto literal, compila y corren dos scripts. Uno coteja cada párrafo del Word contra el curso, texto y negrillas; el otro mira cada rótulo y dice qué pieza se usó. No lo revisa una persona leyendo: lo revisa el script, siempre igual. Lo que no viene del Word, un pie, un icono, se lista como capa editorial para que ustedes lo validen. Y la pantalla a la derecha es la que salió.</aside>
+  </section>
+
+  <section class="slide" data-parte="3 · Demo Andina">
+    <div class="dos">
+      <div>
+        <p class="eyebrow">Paso 4.4 · la revisión del diagramador</p>
+        <h2>Mide a 1440 y 390 px, <span class="fino">y propone</span></h2>
+<pre><span class="t">›</span> node scripts/medir-pantalla.js andina/comunicacion-asertiva tema1
+18 bloques · 1 pieza gráfica · 2 interactivos · 1 banner
+head → 56 → foto → 56 → p → 40 → rótulo → 8 → llamado → 40 → acordeón → 84 → sección 1.1 …
+registro: 8 textos a 16/400 · lead 19,5/300 · banner 32/300
+contraste bajo AA: <span class="s">ninguno</span> · desborde a 390: <span class="s">ninguno</span>
+✗ en-línea: 1 · style="margin:8px 0 0" <span class="t">(viene de la pieza del catálogo, no de la pantalla)</span>
+
+<span class="t">› diagramador · modo revisión</span>
+Ninguna propuesta propia de la pantalla con una medida que la respalde.
+Para el arquitecto: ¿ilustración de apertura en la introducción?
+Para el skin de Andina (REQ): texto de tarjetas y callouts a 15,2 px → 16 px</pre>
+      </div>
+      <div class="lienzo">
+        <div class="captura"><img src="presentacion-terminal/studio-revision.webp" alt="OVA Studio: la pantalla del curso con la caja de verificaciones a la izquierda y las sugerencias del diagramador con Aplicar y Descartar a la derecha"></div>
+        <span class="sello studio" style="left:1.2em;top:1.2em">OVA Studio · revisión</span>
+      </div>
+    </div>
+    <aside class="notas">Con la pantalla compilada, el mismo diagramador la mide a 1440 y a 390 y me dice qué ve: dónde falta aire, qué se repite, qué no cabe en el celular. Propone; no cambia nada solo. Hoy en Andina no propuso nada para la pantalla; lo que anotó es del catálogo o de la piel y va como requerimiento aparte. A la derecha, cada sugerencia con su botón, el marco dorado señalando el bloque y el conmutador computador y celular.</aside>
+  </section>
+
+  <section class="slide" data-parte="3 · Demo Andina">
+    <p class="eyebrow">Resultado · Andina</p>
+    <h2>Portada, temario e introducción <span class="fino">con el mismo proceso</span></h2>
+    <div class="tres">
+      <div><div class="captura"><img src="presentacion-terminal/andina-portada-1440.webp" alt="Portada de Comunicación asertiva en el trabajo con la piel de Andina"></div><p class="pie">Portada: título, subtítulo y frase destacada literales del Word; la foto es la Imagen-01 del DI.</p></div>
+      <div><div class="captura"><img src="presentacion-terminal/andina-temario-1440.webp" alt="Contenido de la unidad con el resultado de aprendizaje y el índice generado desde el menú"></div><p class="pie">Temario: el índice sale del menú que armó el Word; el resultado de aprendizaje, literal.</p></div>
+      <div><div class="captura"><img src="presentacion-terminal/andina-introduccion-1440.webp" alt="Introducción con la apertura, la lista numerada de los tres temas y el video de bienvenida"></div><p class="pie">Introducción: apertura con la negrilla del Word como remate, los tres temas en lista numerada, el video del Word.</p></div>
+    </div>
+    <aside class="notas">Las otras tres pantallas, con el mismo proceso. En la portada no hay nada escrito por nosotros: título, subtítulo, frase y foto son del Word. En la introducción, la primera frase del Word abre con su negrilla como remate y el resto sigue completo debajo.</aside>
+  </section>
+
+  <!-- ===== PARTE 4 · DEMO PANAMERICANA ===== -->
+  <section class="slide" data-parte="4 · Demo Panamericana">
+    <div class="dos ancha-izq">
+      <div>
+        <p class="eyebrow">Mismo comando, otra salida</p>
+        <h2>Un error de origen <span class="fino">que no bloquea el curso</span></h2>
+<pre><span class="t">›</span> fidelidad-di · modo insumos · upanamericana/finanzas-personales
+<span class="r">INSUMOS CON ERRORES</span> · 2 errores comprobados en el Word · ninguno bloquea
+  F1 · Tema 2.2 · Tabla 2 · la Nota dice que los pagos mínimos van en Necesidades,
+       pero el desglose no los incluye y suma $10 000 exactos · Bloquea: No
+  F2 · Referencias · «Banco de México. (s. f.). Costo Anual Total (CAT).» sin URL · Bloquea: No
+  → insumos/ERRORES-ORIGEN-2026-11-09.md · responsable: diseño instruccional
+
+<span class="t">›</span> node scripts/armar-curso.js upanamericana/finanzas-personales --di …
+Curso: <span class="h">Finanzas personales: del sueldo al presupuesto</span>
+Temas (3): 1. A dónde se va tu dinero · 2. Armar un presupuesto · 3. Ahorro y deuda</pre>
+        <p class="nota">El error detiene su pieza, no el curso: la Tabla 2 se maqueta literal cuando llegue el tema 2 y se reemplaza con el Word corregido. Nadie del kit toca el texto; se reporta a su responsable. Las dos filas bloquean la entrega final mientras sigan abiertas.</p>
+      </div>
+      <div class="lienzo">
+        <div class="captura"><img src="presentacion-terminal/studio-auditar.webp" alt="OVA Studio: veredicto de la auditoría con los errores de origen, su responsable y la pieza que detienen"></div>
+        <span class="sello studio" style="left:1.2em;top:1.2em">OVA Studio · errores de origen</span>
+      </div>
+    </div>
+    <aside class="notas">En Panamericana el mismo agente encontró dos cosas en el Word: una tabla del tema 2 cuya nota no cuadra con su desglose, y una referencia sin enlace. Ninguna toca el tema 1, así que el curso se armó igual y seguimos. Aquí es donde esos errores aparecen con botones: cada uno con su responsable y la pieza que detiene. No lo corregimos nosotros: el texto es de ustedes.</aside>
+  </section>
+
+  <section class="slide" data-parte="4 · Demo Panamericana">
+    <p class="eyebrow">El plan del tema 1 · Panamericana</p>
+    <h2>Cinco rótulos, <span class="fino">cinco piezas, cero consultas</span></h2>
+    <div class="dos ancha-izq arriba">
+      <table class="medidas">
+        <thead><tr><th>Bloque del Word</th><th>Rótulo en rojo</th><th>Componente</th></tr></thead>
+        <tbody>
+          <tr><td>¿A dónde se fue el dinero de Diego? · Pregunta / Respuesta</td><td class="rojo">Acordeón</td><td class="mono">ova-acordeon</td></tr>
+          <tr><td>Tabla 1 · Nota · Fuente</td><td>(forma de Tabla simple)</td><td class="mono">ova-apa-tabla</td></tr>
+          <tr><td>Para tener en cuenta · «Durante un mes, anota…»</td><td class="rojo">Bloque destacado - fondo claro</td><td class="mono">ova-destacados</td></tr>
+          <tr><td>Cifra $21 900 · Qué mide · Etiqueta · Texto · Fuente</td><td class="rojo">Bloque con Cifra destacada - clara</td><td class="mono">ova-indicador--claro</td></tr>
+          <tr><td>Tres gastos hormiga frecuentes · Imagen-02/03/04</td><td class="rojo">Tarjetas con foto</td><td class="mono">ova-mosaico</td></tr>
+          <tr><td>«Si revisas los movimientos de tu tarjeta…»</td><td class="rojo">Para reflexionar</td><td class="mono">ova-callout--reflexion</td></tr>
+        </tbody>
+      </table>
+      <div>
+        <div class="captura"><img src="presentacion-terminal/upanamericana-tema1-1440.webp" alt="Tema 1 de Finanzas personales compilado con la piel de Panamericana: título en serif, propósito, acordeón con la pregunta abierta"></div>
+        <p class="pie">Lo que la revisión dejó para decidir: la proporción 4:5 de las tarjetas con foto frente al manual de UP, y los numerales del Word en el índice. Ninguna toca el texto.</p>
+      </div>
+    </div>
+    <aside class="notas">El plan del tema 1 de Panamericana: cinco rótulos, cinco piezas, ninguna consulta. La tabla no lleva rótulo rojo pero tiene la forma exacta de la Tabla simple del catálogo. Las tres fotos del Word van en Tarjetas con foto. La revisión dejó dos decisiones de institución, no de texto.</aside>
+  </section>
+
+  <section class="slide" data-parte="4 · Demo Panamericana">
+    <p class="eyebrow">Mismo proceso, otra piel</p>
+    <h2>Andina y Panamericana, <span class="fino">lado a lado</span></h2>
+    <div class="dos arriba">
+      <div><div class="captura recorte"><img src="presentacion-terminal/andina-portada-1440.webp" alt="Portada de Andina"></div><div class="captura recorte" style="margin-top:1.2vh"><img src="presentacion-terminal/andina-tema1-1440.webp" alt="Tema 1 de Andina"></div></div>
+      <div><div class="captura recorte"><img src="presentacion-terminal/upanamericana-portada-1440.webp" alt="Portada de Panamericana"></div><div class="captura recorte" style="margin-top:1.2vh"><img src="presentacion-terminal/upanamericana-tema1-1440.webp" alt="Tema 1 de Panamericana"></div></div>
+    </div>
+    <aside class="notas">Todo lo que vieron se repitió con Finanzas personales para Panamericana: los mismos comandos, en el mismo orden, el mismo catálogo. Lo que cambia es la piel: colores, tipografía, portada. El motor no sabe de marcas; cada institución vive en su carpeta. No hay un proceso por institución.</aside>
+  </section>
+
+  <section class="slide" data-parte="4 · Demo Panamericana">
+    <div class="dos ancha-izq">
+      <div>
+        <p class="eyebrow">También en el celular</p>
+        <h2>El diagramador mide <span class="fino">las dos pantallas</span></h2>
+        <ul>
+          <li>La tabla de cuatro columnas de Panamericana <strong>se desliza dentro de su marco</strong> a 390 px; la página no se desborda.</li>
+          <li>Las tres fotos del mosaico pasan a una columna; el celular de la tercera foto se ve completo.</li>
+          <li>La portada de Andina sube la foto a franja y conserva el escalón de cuadros; la estrella se oculta.</li>
+          <li>Ninguna medida de contraste por debajo de AA en las ocho pantallas revisadas.</li>
+        </ul>
+      </div>
+      <div style="display:flex;gap:2vw;justify-content:center;align-items:flex-start">
+        <div class="captura movil"><img src="presentacion-terminal/andina-portada-390.webp" alt="Portada de Andina en celular"></div>
+        <div class="captura movil"><img src="presentacion-terminal/andina-tema1-390.webp" alt="Tema 1 de Andina en celular"></div>
+        <div class="captura movil"><img src="presentacion-terminal/upanamericana-portada-390.webp" alt="Portada de Panamericana en celular"></div>
+        <div class="captura movil"><img src="presentacion-terminal/upanamericana-tema1-390.webp" alt="Tema 1 de Panamericana en celular"></div>
+      </div>
+    </div>
+    <aside class="notas">La misma medida a 390 píxeles la toma el script solo, y el diagramador la lee. Aquí comprobó lo que yo le pedí: que la tabla de cuatro columnas no desborde la página, que el celular de la tercera foto se vea, que la portada sin rostro cumpla las reglas de foto de Panamericana.</aside>
+  </section>
+
+  <!-- ===== PARTE 5 · LO QUE NO CAMBIA ===== -->
+  <section class="slide" data-parte="5 · Lo que no cambia">
+    <p class="eyebrow">Con o sin botones</p>
+    <h2>Cuatro reglas <span class="fino">que no se mueven</span></h2>
+    <div class="cuatro">
+      <div class="tarjeta oscura"><h3><span class="n">1</span> Texto literal</h3><p>El texto del curso es el del Word, palabra por palabra. Se elige el componente, no las palabras. Los títulos de los temas y de las secciones son los del Word.</p></div>
+      <div class="tarjeta oscura"><h3><span class="n">2</span> La negrilla se conserva</h3><p>Negrilla en el Word, <code>&lt;strong&gt;</code> en el curso, sin excepción. Y ninguna negrilla que el Word no tenga: el verificador lo exige.</p></div>
+      <div class="tarjeta oscura"><h3><span class="n">3</span> Los errores se reportan</h3><p>Un error del Word o de una figura se reporta a su responsable y detiene su pieza, no el curso. El kit nunca lo corrige.</p></div>
+      <div class="tarjeta oscura"><h3><span class="n">4</span> Lo demás se lista</h3><p>Todo lo que no viene del Word, un pie, un icono, un alt, va a la capa editorial para que ustedes lo validen antes de la entrega.</p></div>
+    </div>
+    <p class="nota">Esto es lo que hace que el curso sea de ustedes y no de la IA. Cambia quién aprieta; no cambia lo que se respeta.</p>
+    <aside class="notas">Antes de Studio, lo que no cambia nunca, en la terminal o con botones: el texto es literal del Word, la negrilla se conserva, los errores de origen se reportan y detienen su pieza, y todo lo que no viene del Word se lista para que ustedes lo validen. Eso es lo que hace que el curso sea de ustedes y no de la IA.</aside>
+  </section>
+
+  <!-- ===== PARTE 6 · OVA STUDIO ===== -->
+  <section class="slide" data-parte="6 · OVA Studio">
+    <div class="dos">
+      <div>
+        <p class="eyebrow">Hacia dónde va</p>
+        <h2>OVA Studio: <span class="fino">la misma cadena, con botones</span></h2>
+        <p>Todo lo que fui señalando a la derecha es OVA Studio: la cadena vista desde el navegador, para quien no trabaja en la terminal.</p>
+        <ul>
+          <li><strong>Hoy existe</strong> para crear el curso, subir los insumos arrastrando cada uno a su cajón y auditarlos. Del resto muestra el comando para la terminal.</li>
+          <li><strong>En curso</strong>: maquetar e ilustrar una sección desde el navegador, con el plan como tabla, las sugerencias con Aplicar y Descartar y la vista previa a 1440 y 390 px.</li>
+          <li><strong>Después</strong>: el diseño completo que vieron en las capturas, la Propuesta B.</li>
+        </ul>
+        <p class="ata">El proceso es el mismo; <b>cambia quién aprieta</b>. Es un proyecto en curso y opcional.</p>
+      </div>
+      <div class="lienzo">
+        <div class="captura"><img src="presentacion-terminal/studio-ilustracion.webp" alt="OVA Studio: la ilustración de apertura propuesta sobre la pantalla, con los botones Aprobar e insertar, Pedir cambio y Descartar"></div>
+        <span class="sello studio" style="left:1.2em;top:1.2em">OVA Studio · ilustración</span>
+      </div>
+    </div>
+    <aside class="notas">Todo lo que señalé a la derecha es OVA Studio. Hoy ya existe para crear el curso, subir insumos y auditarlos; para el resto todavía muestra el comando. Lo que sigue es maquetar e ilustrar desde el navegador, y después el diseño completo de las capturas. El último agente, el ilustrador, es opcional: propone una ilustración de apertura y solo la inserta si apruebo. En Comunicación asertiva no lo corrimos: el Word ya pide una foto de apertura.</aside>
+  </section>
+
+  <!-- CIERRE -->
+  <section class="slide cierre" data-parte="">
+    <div class="banda"></div>
+    <p class="eyebrow">Para arrancar en su máquina</p>
+    <div class="tres" style="margin-bottom:3vh">
+      <div class="tarjeta"><h3><span class="n">1</span> Clonar</h3><p>El repositorio privado del workspace, con el enlace que les enviamos, y correr <code>bin/instalar.sh</code>: dice qué está y qué falta.</p></div>
+      <div class="tarjeta"><h3><span class="n">2</span> Abrir Claude Code</h3><p>En la raíz del workspace. Los comandos y los agentes se cargan solos con el <code>CLAUDE.md</code>.</p></div>
+      <div class="tarjeta"><h3><span class="n">3</span> Retomar</h3><p><code>/ova-retomar andina/comunicacion-asertiva</code>: dice dónde va el curso y cuál es el siguiente comando. El LEEME tiene este arranque paso a paso.</p></div>
+    </div>
+    <p class="frase">El proceso es el mismo; <b>cambia quién aprieta.</b></p>
+    <p class="fecha">Quedo atento a sus preguntas</p>
+    <aside class="notas">Para arrancar: clonar el workspace, correr el instalador, abrir Claude Code y pedirle /ova-retomar sobre el curso de Andina que vieron hoy. El LEEME tiene ese arranque paso a paso. Quedo atento a sus preguntas.</aside>
+  </section>
+
+</div>
+
+<a class="marca" href="#0"><img src="presentacion-terminal/scala-logo-navy.svg" alt="Scala Learning"></a>
+<div class="parte-tag" id="parte"></div>
+<div class="contador" id="contador"></div>
+<div class="progreso" id="progreso"></div>
+<div class="ayuda"><kbd>←</kbd><kbd>→</kbd> avanzar · <kbd>N</kbd> notas · <kbd>F</kbd> pantalla completa</div>
+
+<script>
+(() => {
+  const slides = [...document.querySelectorAll('.slide')];
+  const parte = document.getElementById('parte'), contador = document.getElementById('contador'), progreso = document.getElementById('progreso');
+  let i = Math.min(slides.length - 1, Math.max(0, parseInt(location.hash.slice(1) || '0', 10) || 0));
+  const pad = n => String(n).padStart(2, '0');
+  function ir(n) {
+    i = Math.min(slides.length - 1, Math.max(0, n));
+    slides.forEach((s, k) => s.classList.toggle('activa', k === i));
+    const p = slides[i].dataset.parte || '';
+    parte.innerHTML = p ? `<b>Parte ${p.split(' · ')[0]}</b>${p.split(' · ')[1] || ''}` : '';
+    contador.textContent = `${pad(i + 1)} / ${pad(slides.length)}`;
+    progreso.style.width = `${((i + 1) / slides.length) * 100}%`;
+    history.replaceState(null, '', `#${i}`);
+  }
+  document.addEventListener('keydown', e => {
+    if (['ArrowRight', 'ArrowDown', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); ir(i + 1); }
+    else if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); ir(i - 1); }
+    else if (e.key === 'Home') ir(0);
+    else if (e.key === 'End') ir(slides.length - 1);
+    else if (e.key.toLowerCase() === 'n') document.body.classList.toggle('con-notas');
+    else if (e.key.toLowerCase() === 'f') { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); }
+  });
+  document.getElementById('deck').addEventListener('click', e => {
+    if (e.target.closest('a, button, pre, table')) return;
+    ir(e.clientX > innerWidth / 2 ? i + 1 : i - 1);
+  });
+  let x0 = null;
+  addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
+  addEventListener('touchend', e => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 50) ir(dx < 0 ? i + 1 : i - 1); x0 = null; });
+  addEventListener('hashchange', () => ir(parseInt(location.hash.slice(1), 10) || 0));
+  ir(i);
+})();
+</script>
+</body>
+</html>
